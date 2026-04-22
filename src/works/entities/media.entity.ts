@@ -7,14 +7,15 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Work } from './work.entity';
+import { MediaType } from 'src/utils/enums/medias-type-enum';
 
 @Entity('medias')
 export class Media {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
-  type: string;
+  @Column({ type: 'enum', enum: MediaType, unique: true })
+  type: MediaType;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

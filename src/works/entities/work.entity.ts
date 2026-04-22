@@ -26,13 +26,13 @@ export class Work {
   @Column({ type: 'varchar', nullable: true })
   subtitle: string | null;
 
-  @Column({ type: 'int', nullable: true })
+  @Column({ type: 'int', nullable: true, unique: true })
   volume: number | null;
 
   @Column({ type: 'decimal', nullable: true })
   price: number | null;
 
-  @Column({ name: 'media_id', type: 'varchar', nullable: true })
+  @Column({ name: 'media_id', nullable: true })
   mediaId: string | null;
 
   @Column({ name: 'language_id', type: 'varchar', nullable: true })
@@ -79,6 +79,4 @@ export class Work {
   })
   @JoinColumn({ name: 'serie_id' })
   serie: Serie | null;
-
-  //TODO adicionar relacionamento
 }

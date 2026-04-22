@@ -3,10 +3,14 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
+  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Status } from './status.entity';
+import { Franchise } from 'src/franchises/entities/franchise.entity';
 
 @Entity('series')
 export class Serie {
@@ -16,7 +20,7 @@ export class Serie {
   @Column()
   name: string;
 
-  @Column({ name: 'series_volumes' })
+  @Column({ name: 'series_volumes', default: 0 })
   seriesVolumes: number;
 
   @OneToMany(() => Work, (work) => work.serie)
@@ -28,5 +32,17 @@ export class Serie {
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 
-  //TODO adicionar relacionamento
+  @ManyToOne(() => Status, (status) => status.series, {
+    onDelete: 'SET NULL',
+    nullable: true,
+  })
+  @JoinColumn({ name: 'status_id' })
+  status: Status;
+
+  @ManyToOne(() => Franchise, (franchise) => franchise.series, {
+    onDelete: 'SET NULL',
+    nullable: true,
+  })
+  @JoinColumn({ name: 'franchise_id' })
+  franchise: Franchise | null;
 }

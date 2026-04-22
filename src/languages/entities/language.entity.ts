@@ -1,3 +1,4 @@
+import { LanguageType } from 'src/utils/enums/language-type-enum';
 import { Work } from 'src/works/entities/work.entity';
 import {
   Column,
@@ -13,7 +14,7 @@ export class Language {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column({ type: 'enum', enum: LanguageType, unique: true })
   name: string;
 
   @OneToMany(() => Work, (work) => work.language)

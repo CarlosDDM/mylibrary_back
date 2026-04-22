@@ -1,6 +1,4 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { WorksModule } from './works/works.module';
@@ -27,7 +25,7 @@ import { UsersModule } from './users/users.module';
         database: configService.get<string>('POSTGRES_DB'),
         entities: [`${__dirname}/**/*.entity{.ts,.js}`],
         //TODO habilitar as migration migrations: [`${__dirname}/migrations/*{.ts,.js}`],
-        synchronize: true, //TODO desabilitar em produção
+        synchronize: configService.get<string>('NODE_ENV') !== 'production',
       }),
     }),
     WorksModule,
@@ -38,7 +36,5 @@ import { UsersModule } from './users/users.module';
     LanguagesModule,
     UsersModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
 })
 export class AppModule {}

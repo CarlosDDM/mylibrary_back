@@ -1,7 +1,9 @@
+import { Serie } from 'src/series/entities/serie.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -20,5 +22,6 @@ export class Franchise {
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 
-  //TODO adicionar relacionamento
+  @OneToMany(() => Serie, (serie) => serie.franchise)
+  series: Serie[];
 }
