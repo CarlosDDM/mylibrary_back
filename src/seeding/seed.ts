@@ -1,4 +1,4 @@
-import { dataSourceOptions } from 'src/database/data-source-database';
+import { dataSourceOptions } from 'src/database/data-source.database';
 import { DataSource, DataSourceOptions } from 'typeorm';
 import { runSeeders, SeederOptions } from 'typeorm-extension';
 import { MainSeeder } from './main.seeder';

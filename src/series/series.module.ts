@@ -3,10 +3,9 @@ import { SeriesService } from './series.service';
 import { SeriesController } from './series.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Serie } from './entities/serie.entity';
-import { Status } from './entities/status.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Serie, Status])],
+  imports: [TypeOrmModule.forFeature([Serie])],
   controllers: [SeriesController],
   providers: [SeriesService],
 })

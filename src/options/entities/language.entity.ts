@@ -1,4 +1,4 @@
-import { LanguageType } from 'src/utils/enums/language-type-enum';
+import { LanguageType } from 'src/utils/enums/language-type.enum';
 import { Work } from 'src/works/entities/work.entity';
 import {
   Column,
@@ -15,7 +15,7 @@ export class Language {
   id: string;
 
   @Column({ type: 'enum', enum: LanguageType, unique: true })
-  name: string;
+  type: string;
 
   @OneToMany(() => Work, (work) => work.language)
   works: Work[];

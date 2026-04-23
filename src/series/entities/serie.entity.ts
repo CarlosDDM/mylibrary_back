@@ -9,7 +9,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Status } from './status.entity';
+import { Status } from '../../options/entities/status.entity';
 import { Franchise } from 'src/franchises/entities/franchise.entity';
 
 @Entity('series')

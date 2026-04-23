@@ -1,9 +1,9 @@
-import { Language } from 'src/languages/entities/language.entity';
-import { Status } from 'src/series/entities/status.entity';
-import { LanguageType } from 'src/utils/enums/language-type-enum';
-import { MediaType } from 'src/utils/enums/medias-type-enum';
-import { StatusType } from 'src/utils/enums/status-type-enum';
-import { Media } from 'src/works/entities/media.entity';
+import { Language } from 'src/options/entities/language.entity';
+import { Media } from 'src/options/entities/media.entity';
+import { Status } from 'src/options/entities/status.entity';
+import { LanguageType } from 'src/utils/enums/language-type.enum';
+import { MediaType } from 'src/utils/enums/medias-type.enum';
+import { StatusType } from 'src/utils/enums/status-type.enum';
 import { DataSource } from 'typeorm';
 import { Seeder, SeederFactoryManager } from 'typeorm-extension';
 
@@ -37,9 +37,9 @@ export class MainSeeder implements Seeder {
     console.log('seeding LanguageTypes');
     const LanguageTypes = await LanguageRepo.save([
       {
-        name: LanguageType.PT,
+        type: LanguageType.PT_BR,
       },
-      { name: LanguageType.EN },
+      { type: LanguageType.EN },
     ]);
   }
 }

@@ -6,8 +6,8 @@ import { SeriesModule } from './series/series.module';
 import { FranchisesModule } from './franchises/franchises.module';
 import { AuthorsModule } from './authors/authors.module';
 import { IllustratorsModule } from './illustrators/illustrators.module';
-import { LanguagesModule } from './languages/languages.module';
 import { UsersModule } from './users/users.module';
+import { OptionsModule } from './options/options.module';
 
 @Module({
   imports: [
@@ -33,8 +33,8 @@ import { UsersModule } from './users/users.module';
     FranchisesModule,
     AuthorsModule,
     IllustratorsModule,
-    LanguagesModule,
     UsersModule,
+    OptionsModule,
   ],
 })
 export class AppModule {}
