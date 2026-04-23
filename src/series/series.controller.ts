@@ -6,12 +6,15 @@ import {
   Patch,
   Param,
   Delete,
+  SerializeOptions,
 } from '@nestjs/common';
 import { SeriesService } from './series.service';
 import { CreateSeriesDto } from './dto/create-series.dto';
 import { UpdateSeriesDto } from './dto/update-series.dto';
+import { ResponseSeries } from './dto/response-series.dto';
 
 @Controller('series')
+@SerializeOptions({ type: ResponseSeries })
 export class SeriesController {
   constructor(private readonly seriesService: SeriesService) {}
 

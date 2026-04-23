@@ -17,11 +17,11 @@ export class Serie {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column({ unique: true })
   name: string;
 
-  @Column({ name: 'series_volumes', default: 0 })
-  seriesVolumes: number;
+  @Column({ name: 'serie_volumes', type: 'int', default: null, nullable: true })
+  serieVolumes: number | null;
 
   @OneToMany(() => Work, (work) => work.serie)
   works: Work[];
@@ -33,8 +33,7 @@ export class Serie {
   updatedAt: Date;
 
   @ManyToOne(() => Status, (status) => status.series, {
-    onDelete: 'SET NULL',
-    nullable: true,
+    onDelete: 'RESTRICT',
   })
   @JoinColumn({ name: 'status_id' })
   status: Status;

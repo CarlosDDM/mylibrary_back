@@ -8,3 +8,18 @@ Content-Type: application/json
 GET {{URL_API}}/options
 Content-Type: application/json
 
+#### Serie ENDPOINTS
+
+### CREATE Serie
+POST {{URL_API}}/series
+Content-Type: application/json
+
+{
+  "name": "Kage no Jitsuryokusha ni Naritakute!",
+  "statusId": "5898aed2-65b2-472a-b646-4c97f7e4c6a1",
+  "serieVolumes": 7
+}
+
+### GET ALL Series
+GET {{URL_API}}/series
+Content-Type: application/json

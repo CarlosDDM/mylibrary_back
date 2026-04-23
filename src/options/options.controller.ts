@@ -3,11 +3,11 @@ import { OptionsService } from './options.service';
 import { ResponseOption } from './dto/response-option.dto';
 
 @Controller('options')
+@SerializeOptions({ type: ResponseOption })
 export class OptionsController {
   constructor(private readonly optionsService: OptionsService) {}
 
   @Get()
-  @SerializeOptions({ type: ResponseOption })
   findAll() {
     return this.optionsService.findAll();
   }
