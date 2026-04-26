@@ -9,11 +9,11 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Cover } from './cover.entity';
-import { Language } from 'src/options/entities/language.entity';
+import { Language } from 'src/languages/entities/language.entity';
 import { Serie } from 'src/series/entities/serie.entity';
 import { WorkAuthor } from './work-author.entity';
 import { WorkIllustrator } from './work-illustrator.entity';
-import { Media } from 'src/options/entities/media.entity';
+import { Media } from 'src/medias/entities/media.entity';
 
 @Entity('works')
 export class Work {

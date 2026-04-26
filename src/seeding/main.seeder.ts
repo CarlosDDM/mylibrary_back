@@ -1,6 +1,6 @@
-import { Language } from 'src/options/entities/language.entity';
-import { Media } from 'src/options/entities/media.entity';
-import { Status } from 'src/options/entities/status.entity';
+import { Language } from 'src/languages/entities/language.entity';
+import { Media } from 'src/medias/entities/media.entity';
+import { Status } from 'src/status/entities/status.entity';
 import { LanguageType } from 'src/utils/enums/language-type.enum';
 import { MediaType } from 'src/utils/enums/medias-type.enum';
 import { StatusType } from 'src/utils/enums/status-type.enum';

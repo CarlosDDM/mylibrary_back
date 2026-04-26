@@ -9,7 +9,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Status } from '../../options/entities/status.entity';
+import { Status } from '../../status/entities/status.entity';
 import { Franchise } from 'src/franchises/entities/franchise.entity';
 
 @Entity('series')
@@ -19,6 +19,12 @@ export class Serie {
 
   @Column({ unique: true })
   name: string;
+
+  @Column({ name: 'status_id' })
+  statusId: string;
+
+  @Column({ name: 'franchise_id', default: null })
+  franchiseId: string | null;
 
   @Column({ name: 'serie_volumes', type: 'int', default: null, nullable: true })
   serieVolumes: number | null;

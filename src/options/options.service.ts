@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { DataSource } from 'typeorm';
-import { Language } from './entities/language.entity';
-import { Status } from './entities/status.entity';
-import { Media } from './entities/media.entity';
+import { Language } from '../languages/entities/language.entity';
+import { Status } from '../status/entities/status.entity';
+import { Media } from '../medias/entities/media.entity';
 
 @Injectable()
 export class OptionsService {

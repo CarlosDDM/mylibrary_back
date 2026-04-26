@@ -27,7 +27,7 @@ export class FranchisesController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.franchisesService.findOne(+id);
+    return this.franchisesService.findOne({ id });
   }
 
   @Patch(':id')

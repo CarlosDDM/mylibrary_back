@@ -1,60 +1,53 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreateSeriesDto } from './dto/create-series.dto';
 import { UpdateSeriesDto } from './dto/update-series.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Serie } from './entities/serie.entity';
 import { Repository } from 'typeorm';
+import { StatusService } from 'src/status/status.service';
+import { FranchisesService } from 'src/franchises/franchises.service';
+import { BaseService } from 'src/common/base.service';
 
 @Injectable()
-export class SeriesService {
+export class SeriesService extends BaseService<Serie> {
   constructor(
     @InjectRepository(Serie)
     private readonly serieRepository: Repository<Serie>,
-  ) {}
+    private readonly statusService: StatusService,
+    private readonly franchiseService: FranchisesService,
+  ) {
+    super(serieRepository, 'Serie', { status: true, franchise: true });
+  }
 
-  private async validateExistSerie(name: string) {
-    const exist = await this.serieRepository.exists({
-      where: {
-        name,
-      },
-    });
+  private async validateSerieData(dto: CreateSeriesDto | UpdateSeriesDto) {
+    if (dto.statusId) {
+      await this.statusService.validateExists({ id: dto.statusId });
+    }
 
-    if (exist) throw new ConflictException('Serie já existe');
+    if (dto.franchiseId) {
+      await this.franchiseService.validateExists({ id: dto.franchiseId });
+    }
+
+    if (dto.name) {
+      await this.validateNotExists({ name: dto.name });
+    }
   }
 
   async create(createSeriesDto: CreateSeriesDto) {
-    await this.validateExistSerie(createSeriesDto.name);
+    await this.validateSerieData(createSeriesDto);
 
-    const newSerie = await this.serieRepository.save({
-      name: createSeriesDto.name,
-      serieVolumes: createSeriesDto.serieVolumes,
-      status: { id: createSeriesDto.statusId },
-      franchise: createSeriesDto.franchiseId
-        ? { id: createSeriesDto.franchiseId }
-        : null,
-    });
+    const newSerie = await this.repository.save(createSeriesDto);
 
-    return this.serieRepository.findOne({
-      where: { id: newSerie.id },
-      relations: ['status', 'franchise'],
-    });
+    return this.findOne({ id: newSerie.id });
   }
 
-  findAll() {
-    return this.serieRepository.find({
-      relations: ['status', 'franchise'],
-    });
-  }
+  async update(id: string, updateSeriesDto: UpdateSeriesDto) {
+    await this.validateExists({ id });
 
-  findOne(id: number) {
-    return `This action returns a #${id} series`;
-  }
+    await this.validateSerieData(updateSeriesDto);
 
-  update(id: number, updateSeriesDto: UpdateSeriesDto) {
-    return `This action updates a #${id} series`;
-  }
+    await this.repository.update({ id }, updateSeriesDto);
 
-  remove(id: number) {
-    return `This action removes a #${id} series`;
+    return this.findOne({ id });
   }
 }

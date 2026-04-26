@@ -8,6 +8,9 @@ import { AuthorsModule } from './authors/authors.module';
 import { IllustratorsModule } from './illustrators/illustrators.module';
 import { UsersModule } from './users/users.module';
 import { OptionsModule } from './options/options.module';
+import { StatusModule } from './status/status.module';
+import { MediasModule } from './medias/medias.module';
+import { LanguagesModule } from './languages/languages.module';
 
 @Module({
   imports: [
@@ -35,6 +38,9 @@ import { OptionsModule } from './options/options.module';
     IllustratorsModule,
     UsersModule,
     OptionsModule,
+    StatusModule,
+    MediasModule,
+    LanguagesModule,
   ],
 })
 export class AppModule {}

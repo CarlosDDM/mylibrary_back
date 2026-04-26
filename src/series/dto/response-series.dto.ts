@@ -3,7 +3,7 @@ import { Franchise } from 'src/franchises/entities/franchise.entity';
 import { OptionsType } from 'src/options/dto/response-option.dto';
 import { Work } from 'src/works/entities/work.entity';
 
-export class ResponseSeries {
+export class ResponseSeriesDto {
   @Expose()
   id: string;
 

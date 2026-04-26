@@ -1,8 +1,5 @@
 @URL_API = http://localhost:3000
-
-### GET all languages
-GET {{URL_API}}/languages
-Content-Type: application/json
+@SERIE_ID = {{createSerie.response.body.id}}
 
 ### GET all Options
 GET {{URL_API}}/options
@@ -11,15 +8,37 @@ Content-Type: application/json
 #### Serie ENDPOINTS
 
 ### CREATE Serie
+# @name createSerie
 POST {{URL_API}}/series
 Content-Type: application/json
 
 {
-  "name": "Kage no Jitsuryokusha ni Naritakute!",
+  "name": "The Eminence in Shadow",
   "statusId": "5898aed2-65b2-472a-b646-4c97f7e4c6a1",
-  "serieVolumes": 7
+  "serieVolumes": 8
 }
 
 ### GET ALL Series
 GET {{URL_API}}/series
+Content-Type: application/json
+
+### GET Serie
+# @name getSerie
+GET {{URL_API}}/series/{{SERIE_ID}}
+Content-Type: application/json
+
+### UPDATE Serie
+# @name updateSerie
+PATCH  {{URL_API}}/series/{{SERIE_ID}}
+Content-Type: application/json
+
+{
+  "name": "Mushoku Tensei: Uma segunda chance",
+  "statusId": "97b1a54d-eea0-4f1b-9a98-559d63525609",
+  "serieVolumes": 6
+}
+
+### DELETE Serie
+# @name deleteSeries
+DELETE {{URL_API}}/series/{{SERIE_ID}}
 Content-Type: application/json

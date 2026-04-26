@@ -7,14 +7,15 @@ import {
   Param,
   Delete,
   SerializeOptions,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { SeriesService } from './series.service';
 import { CreateSeriesDto } from './dto/create-series.dto';
 import { UpdateSeriesDto } from './dto/update-series.dto';
-import { ResponseSeries } from './dto/response-series.dto';
+import { ResponseSeriesDto } from './dto/response-series.dto';
 
 @Controller('series')
-@SerializeOptions({ type: ResponseSeries })
+@SerializeOptions({ type: ResponseSeriesDto })
 export class SeriesController {
   constructor(private readonly seriesService: SeriesService) {}
 
@@ -29,17 +30,20 @@ export class SeriesController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.seriesService.findOne(+id);
+  findOne(@Param('id', ParseUUIDPipe) id: string) {
+    return this.seriesService.findOne({ id });
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateSeriesDto: UpdateSeriesDto) {
-    return this.seriesService.update(+id, updateSeriesDto);
+  update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() updateSeriesDto: UpdateSeriesDto,
+  ) {
+    return this.seriesService.update(id, updateSeriesDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.seriesService.remove(+id);
+    return this.seriesService.delete({ id });
   }
 }
