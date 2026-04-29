@@ -1,5 +1,6 @@
 @URL_API = http://localhost:3000
-@SERIE_ID = {{createSerie.response.body.id}}
+@SERIE_ID = 0f885288-a676-49e3-9278-0e0ced086485
+@FRANCHISE_ID = {{createFranchise.response.body.id}}
 
 ### GET all Options
 GET {{URL_API}}/options
@@ -13,17 +14,18 @@ POST {{URL_API}}/series
 Content-Type: application/json
 
 {
-  "name": "The Eminence in Shadow",
-  "statusId": "5898aed2-65b2-472a-b646-4c97f7e4c6a1",
-  "serieVolumes": 8
+  "name": "No Game No Life",
+  "statusId": "97b1a54d-eea0-4f1b-9a98-559d63525609",
+  "serieVolumes": 13
 }
 
 ### GET ALL Series
+# @name readAllSerie
 GET {{URL_API}}/series
 Content-Type: application/json
 
 ### GET Serie
-# @name getSerie
+# @name readSerie
 GET {{URL_API}}/series/{{SERIE_ID}}
 Content-Type: application/json
 
@@ -33,12 +35,52 @@ PATCH  {{URL_API}}/series/{{SERIE_ID}}
 Content-Type: application/json
 
 {
-  "name": "Mushoku Tensei: Uma segunda chance",
-  "statusId": "97b1a54d-eea0-4f1b-9a98-559d63525609",
-  "serieVolumes": 6
+  "name": "No Game No Life",
+  "statusId": "5898aed2-65b2-472a-b646-4c97f7e4c6a1",
+  "franchiseId":"a8697b40-f930-41b4-8373-e397c83e457e",
+  "serieVolumes": 13
 }
 
 ### DELETE Serie
 # @name deleteSeries
 DELETE {{URL_API}}/series/{{SERIE_ID}}
 Content-Type: application/json
+
+#### Franchise ENDPOINTS
+
+### CREATE Franchise
+# @name createFranchise
+POST {{URL_API}}/franchises
+Content-Type: application/json
+
+{
+  "name": "No Game No Life 2"
+}
+
+### READ ALL Franchise
+# @name readAllFranchise
+GET {{URL_API}}/franchises
+Content-Type: application/json
+
+### READ Franchise
+# @name readFranchise
+GET {{URL_API}}/franchises/{{FRANCHISE_ID}}
+Content-Type: application/json
+
+### UPDATE Franchise
+# @name updateFranchise
+PATCH {{URL_API}}/franchises/{{FRANCHISE_ID}}
+Content-Type: application/json
+
+{
+  "name": "No Game No Life 1"
+}
+
+### DELETE Franchise
+# @name deleteFranchise
+DELETE {{URL_API}}/franchises/{{FRANCHISE_ID}}
+Content-Type: application/json
+
+
+
+

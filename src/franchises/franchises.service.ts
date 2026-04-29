@@ -14,20 +14,34 @@ export class FranchisesService extends BaseService<Franchise> {
   ) {
     super(franchiseRepository, 'Franchise', { series: true });
   }
-
-  create(createFranchiseDto: CreateFranchiseDto) {
-    return 'This action adds a new franchise';
+  private async validateFranchise(
+    dto: CreateFranchiseDto | UpdateFranchiseDto,
+  ) {
+    if (dto.name) {
+      await this.validateNotExists({ name: dto.name });
+    }
   }
 
-  findAll() {
-    return super.findAll();
+  async create(createFranchiseDto: CreateFranchiseDto) {
+    await this.validateFranchise(createFranchiseDto);
+    const newFranchise = this.repository.save(createFranchiseDto);
+
+    return this.findOne({ id: (await newFranchise).id });
   }
 
-  update(id: number, updateFranchiseDto: UpdateFranchiseDto) {
-    return `This action updates a #${id} franchise`;
-  }
+  async update(id: string, updateFranchiseDto: UpdateFranchiseDto) {
+    const franchise = await this.findOne({ id });
 
-  remove(id: number) {
-    return `This action removes a #${id} franchise`;
+    if (updateFranchiseDto.name !== franchise.name) {
+      await this.validateFranchise(updateFranchiseDto);
+
+      await this.repository.update({ id }, updateFranchiseDto);
+
+      return this.findOne({ id });
+    }
+
+    await this.repository.update({ id }, updateFranchiseDto);
+
+    return this.findOne({ id });
   }
 }

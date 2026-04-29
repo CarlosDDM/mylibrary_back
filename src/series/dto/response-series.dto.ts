@@ -1,5 +1,4 @@
 import { Expose, Type } from 'class-transformer';
-import { Franchise } from 'src/franchises/entities/franchise.entity';
 import { OptionsType } from 'src/options/dto/response-option.dto';
 import { Work } from 'src/works/entities/work.entity';
 
@@ -22,6 +21,6 @@ export class ResponseSeriesDto {
   works: Work[];
 
   @Expose()
-  @Type(() => Franchise)
-  franchise: Franchise | null;
+  @Type(() => ResponseSeriesDto)
+  franchise: ResponseSeriesDto | null;
 }

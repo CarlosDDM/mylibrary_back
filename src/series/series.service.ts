@@ -19,7 +19,10 @@ export class SeriesService extends BaseService<Serie> {
     super(serieRepository, 'Serie', { status: true, franchise: true });
   }
 
-  private async validateSerieData(dto: CreateSeriesDto | UpdateSeriesDto) {
+  private async validateSerieData(
+    dto: CreateSeriesDto | UpdateSeriesDto,
+    validateName = true,
+  ) {
     if (dto.statusId) {
       await this.statusService.validateExists({ id: dto.statusId });
     }
@@ -28,7 +31,7 @@ export class SeriesService extends BaseService<Serie> {
       await this.franchiseService.validateExists({ id: dto.franchiseId });
     }
 
-    if (dto.name) {
+    if (validateName && dto.name) {
       await this.validateNotExists({ name: dto.name });
     }
   }
@@ -42,9 +45,17 @@ export class SeriesService extends BaseService<Serie> {
   }
 
   async update(id: string, updateSeriesDto: UpdateSeriesDto) {
-    await this.validateExists({ id });
+    const serie = await this.findOne({ id });
 
-    await this.validateSerieData(updateSeriesDto);
+    if (serie && serie.name !== updateSeriesDto.name) {
+      await this.validateSerieData(updateSeriesDto);
+
+      await this.repository.update({ id }, updateSeriesDto);
+
+      return this.findOne({ id });
+    }
+
+    await this.validateSerieData(updateSeriesDto, false);
 
     await this.repository.update({ id }, updateSeriesDto);
 

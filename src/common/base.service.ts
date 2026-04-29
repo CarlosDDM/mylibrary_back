@@ -31,8 +31,16 @@ export abstract class BaseService<T extends ObjectLiteral> {
   }
 
   async findOne(where: FindOptionsWhere<T>) {
-    await this.validateExists(where);
-    return this.repository.findOne({ where, relations: this.relations });
+    const result = await this.repository.findOne({
+      where,
+      relations: this.relations,
+    });
+
+    if (!result) {
+      throw new NotFoundException(`${this.entityName} não encontrado`);
+    }
+
+    return result;
   }
 
   async delete(where: FindOptionsWhere<T>) {

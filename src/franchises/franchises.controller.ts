@@ -6,12 +6,16 @@ import {
   Patch,
   Param,
   Delete,
+  ParseUUIDPipe,
+  SerializeOptions,
 } from '@nestjs/common';
 import { FranchisesService } from './franchises.service';
 import { CreateFranchiseDto } from './dto/create-franchise.dto';
 import { UpdateFranchiseDto } from './dto/update-franchise.dto';
+import { ResponseFranchise } from './dto/response-franchise.dto';
 
 @Controller('franchises')
+@SerializeOptions({ type: ResponseFranchise })
 export class FranchisesController {
   constructor(private readonly franchisesService: FranchisesService) {}
 
@@ -26,20 +30,20 @@ export class FranchisesController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.franchisesService.findOne({ id });
   }
 
   @Patch(':id')
   update(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() updateFranchiseDto: UpdateFranchiseDto,
   ) {
-    return this.franchisesService.update(+id, updateFranchiseDto);
+    return this.franchisesService.update(id, updateFranchiseDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.franchisesService.remove(+id);
+  remove(@Param('id', ParseUUIDPipe) id: string) {
+    return this.franchisesService.delete({ id });
   }
 }

@@ -23,5 +23,5 @@ export class CreateSeriesDto {
 
   @IsUUID()
   @IsOptional()
-  franchiseId?: string | null;
+  franchiseId: string | null;
 }

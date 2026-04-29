@@ -43,7 +43,7 @@ export class SeriesController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.seriesService.delete({ id });
   }
 }
