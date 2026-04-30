@@ -8,5 +8,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
   imports: [TypeOrmModule.forFeature([Media])],
   controllers: [MediasController],
   providers: [MediasService],
+  exports: [MediasService],
 })
 export class MediasModule {}

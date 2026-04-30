@@ -1,6 +1,10 @@
-@URL_API = http://localhost:3000
-@SERIE_ID = 0f885288-a676-49e3-9278-0e0ced086485
-@FRANCHISE_ID = {{createFranchise.response.body.id}}
+@URL_API=http://localhost:3000
+@SERIE_ID=0f885288-a676-49e3-9278-0e0ced086485
+@FRANCHISE_ID={{createFranchise.response.body.id}}
+
+@AUTHOR_ID={{createAuthor.response.body.id}}
+
+@ILLUSTRATOR_ID={{createIllustrator.response.body.id}}
 
 ### GET all Options
 GET {{URL_API}}/options
@@ -14,9 +18,9 @@ POST {{URL_API}}/series
 Content-Type: application/json
 
 {
-  "name": "No Game No Life",
+  "name": "The Eminence in Shadow",
   "statusId": "97b1a54d-eea0-4f1b-9a98-559d63525609",
-  "serieVolumes": 13
+  "serieVolumes": 8
 }
 
 ### GET ALL Series
@@ -81,6 +85,95 @@ Content-Type: application/json
 DELETE {{URL_API}}/franchises/{{FRANCHISE_ID}}
 Content-Type: application/json
 
+#### Works ENDPOINTS
+
+### CREATE Work
+# @name createWork
+POST {{URL_API}}/works
+Content-Type: application/json
+
+{
+  "name": "The Eminence in Shadow",
+  "subtitle": "",
+  "volume": 1,
+  //"price": "",
+  "mediaId": "0ffa3376-e909-4520-bb0b-6007d813a597",
+  "languageId": "1ef9ba72-4449-437d-a768-5e0bf9ced2f9",
+  "serieId": "37b14819-5482-4a9f-8feb-7104c283fc70",
+  "isSpecialEdition": false
+}
+
+### READ All Work
+# @name readAllWork
+GET {{URL_API}}/works
+Content-Type: application/json
 
 
+#### Authors ENDPOINTS
+### CREATE Author
+# @name createAuthor
+POST {{URL_API}}/authors
+Content-Type: application/json
 
+{
+  "name": "Rifujin na Magonote"
+}
+
+### READ ALL Author
+# @name readAllAuthor
+GET {{URL_API}}/authors
+Content-Type: application/json
+
+### READ Author
+# @name readAuthor
+GET {{URL_API}}/authors/{{AUTHOR_ID}}
+Content-Type: application/json
+
+### UPDATE Author
+# @name updateAuthor
+PATCH {{URL_API}}/authors/{{AUTHOR_ID}}
+Content-Type: application/json
+
+{
+  "name": "Rifujin na Magonote"
+}
+
+### DELETE Author
+# @name deleteAuthor
+DELETE {{URL_API}}/authors/{{AUTHOR_ID}}
+Content-Type: application/json
+
+#### Illustrator ENDPOINTS
+
+### CREATE Illustrator
+# @name createIllustrator
+POST {{URL_API}}/illustrators
+Content-Type: application/json
+
+{
+  "name": "Shirotaka"
+}
+
+### READ ALL Illustrator
+# @name readAllIllustrator
+GET {{URL_API}}/illustrators
+Content-Type: application/json
+
+### READ Illustrator
+# @name readIllustrator
+GET {{URL_API}}/illustrators/{{ILLUSTRATOR_ID}}
+Content-Type: application/json
+
+### UPDATE Illustrator
+# @name updateIllustrator
+PATCH {{URL_API}}/illustrators/{{ILLUSTRATOR_ID}}
+Content-Type: application/json
+
+{
+  "name": "Shirotaka"
+}
+
+### DELETE Illustrator
+# @name deleteIllustrator
+DELETE {{URL_API}}/illustrators/{{ILLUSTRATOR_ID}}
+Content-Type: application/json

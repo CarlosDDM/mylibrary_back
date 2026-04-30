@@ -6,12 +6,16 @@ import {
   Patch,
   Param,
   Delete,
+  ParseUUIDPipe,
+  SerializeOptions,
 } from '@nestjs/common';
 import { IllustratorsService } from './illustrators.service';
 import { CreateIllustratorDto } from './dto/create-illustrator.dto';
 import { UpdateIllustratorDto } from './dto/update-illustrator.dto';
+import { ResponseIllustratorDto } from './dto/response-illustrator.dto';
 
 @Controller('illustrators')
+@SerializeOptions({ type: ResponseIllustratorDto })
 export class IllustratorsController {
   constructor(private readonly illustratorsService: IllustratorsService) {}
 
@@ -26,20 +30,20 @@ export class IllustratorsController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.illustratorsService.findOne(+id);
+  findOne(@Param('id', ParseUUIDPipe) id: string) {
+    return this.illustratorsService.findOne({ id });
   }
 
   @Patch(':id')
   update(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() updateIllustratorDto: UpdateIllustratorDto,
   ) {
-    return this.illustratorsService.update(+id, updateIllustratorDto);
+    return this.illustratorsService.update(id, updateIllustratorDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.illustratorsService.remove(+id);
+  remove(@Param('id', ParseUUIDPipe) id: string) {
+    return this.illustratorsService.delete({ id });
   }
 }

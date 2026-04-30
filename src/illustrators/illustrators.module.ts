@@ -8,5 +8,6 @@ import { Illustrator } from './entities/illustrator.entity';
   imports: [TypeOrmModule.forFeature([Illustrator])],
   controllers: [IllustratorsController],
   providers: [IllustratorsService],
+  exports: [IllustratorsService],
 })
 export class IllustratorsModule {}

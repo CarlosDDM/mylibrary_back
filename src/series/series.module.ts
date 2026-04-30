@@ -10,5 +10,6 @@ import { FranchisesModule } from 'src/franchises/franchises.module';
   imports: [TypeOrmModule.forFeature([Serie]), StatusModule, FranchisesModule],
   controllers: [SeriesController],
   providers: [SeriesService],
+  exports: [SeriesService],
 })
 export class SeriesModule {}

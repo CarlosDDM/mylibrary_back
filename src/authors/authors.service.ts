@@ -1,26 +1,41 @@
 import { Injectable } from '@nestjs/common';
 import { CreateAuthorDto } from './dto/create-author.dto';
 import { UpdateAuthorDto } from './dto/update-author.dto';
+import { BaseService } from 'src/common/base.service';
+import { Author } from './entities/author.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
-export class AuthorsService {
-  create(createAuthorDto: CreateAuthorDto) {
-    return 'This action adds a new author';
+export class AuthorsService extends BaseService<Author> {
+  constructor(
+    @InjectRepository(Author)
+    private readonly authorRepository: Repository<Author>,
+  ) {
+    super(authorRepository, 'Author');
+  }
+  private async validateAuthorData(dto: CreateAuthorDto | UpdateAuthorDto) {
+    if (dto.name) {
+      await this.validateNotExists({ name: dto.name });
+    }
   }
 
-  findAll() {
-    return `This action returns all authors`;
+  async create(createAuthorDto: CreateAuthorDto) {
+    await this.validateAuthorData(createAuthorDto);
+
+    const result = await this.repository.save(createAuthorDto);
+    return this.findOne({ id: result.id });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} author`;
-  }
+  async update(id: string, updateAuthorDto: UpdateAuthorDto) {
+    const result = await this.findOne({ id });
 
-  update(id: number, updateAuthorDto: UpdateAuthorDto) {
-    return `This action updates a #${id} author`;
-  }
+    if (updateAuthorDto.name !== result.name) {
+      await this.validateAuthorData(updateAuthorDto);
+      await this.repository.update({ id }, updateAuthorDto);
+      return this.findOne({ id });
+    }
 
-  remove(id: number) {
-    return `This action removes a #${id} author`;
+    return result;
   }
 }

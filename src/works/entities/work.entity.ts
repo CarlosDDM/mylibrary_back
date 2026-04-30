@@ -7,6 +7,7 @@ import {
   PrimaryGeneratedColumn,
   JoinColumn,
   UpdateDateColumn,
+  Unique,
 } from 'typeorm';
 import { Cover } from './cover.entity';
 import { Language } from 'src/languages/entities/language.entity';
@@ -16,17 +17,18 @@ import { WorkIllustrator } from './work-illustrator.entity';
 import { Media } from 'src/medias/entities/media.entity';
 
 @Entity('works')
+@Unique(['serieId', 'volume'])
 export class Work {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column()
-  title: string;
+  name: string;
 
   @Column({ type: 'varchar', nullable: true })
   subtitle: string | null;
 
-  @Column({ type: 'int', nullable: true, unique: true })
+  @Column({ type: 'int', nullable: true })
   volume: number | null;
 
   @Column({ type: 'decimal', nullable: true })
