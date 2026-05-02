@@ -1,7 +1,8 @@
-import { Expose, Type } from 'class-transformer';
+import { Exclude, Expose, Type } from 'class-transformer';
 import { OptionsType } from 'src/options/dto/response-option.dto';
-import { Work } from 'src/works/entities/work.entity';
+import { ResponseWorkDto } from 'src/works/dto/response-work.dto';
 
+@Exclude()
 export class ResponseSeriesDto {
   @Expose()
   id: string;
@@ -17,8 +18,8 @@ export class ResponseSeriesDto {
   status: OptionsType;
 
   @Expose()
-  @Type(() => Work)
-  works: Work[];
+  @Type(() => ResponseWorkDto)
+  works: ResponseWorkDto[];
 
   @Expose()
   @Type(() => ResponseSeriesDto)

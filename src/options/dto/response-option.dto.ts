@@ -1,5 +1,6 @@
-import { Expose, Type } from 'class-transformer';
+import { Exclude, Expose, Type } from 'class-transformer';
 
+@Exclude()
 export class OptionsType {
   @Expose()
   id: string;

@@ -6,6 +6,8 @@
 
 @ILLUSTRATOR_ID={{createIllustrator.response.body.id}}
 
+@WORK_ID={{createWork.response.body.id}}
+
 ### GET all Options
 GET {{URL_API}}/options
 Content-Type: application/json
@@ -18,7 +20,7 @@ POST {{URL_API}}/series
 Content-Type: application/json
 
 {
-  "name": "The Eminence in Shadow",
+  "name": "Mushoku Tensei: Uma segunda chance",
   "statusId": "97b1a54d-eea0-4f1b-9a98-559d63525609",
   "serieVolumes": 8
 }
@@ -93,14 +95,19 @@ POST {{URL_API}}/works
 Content-Type: application/json
 
 {
-  "name": "The Eminence in Shadow",
-  "subtitle": "",
-  "volume": 1,
-  //"price": "",
+  "subtitle": "Aventura",
+  "volume": 9,
+  "price": 49.90,
   "mediaId": "0ffa3376-e909-4520-bb0b-6007d813a597",
   "languageId": "1ef9ba72-4449-437d-a768-5e0bf9ced2f9",
-  "serieId": "37b14819-5482-4a9f-8feb-7104c283fc70",
-  "isSpecialEdition": false
+  "serieId": "72fc3e57-1b36-4a95-8cdb-733f488f84cf",
+  "isSpecialEdition": false,
+  "authors": [
+    "3ce60a7c-1fa4-4812-b921-7607abcacf10"
+  ],
+  "illustrators": [
+    "943ede77-432b-4cf3-a57f-ca1e49f0a6be"
+  ]
 }
 
 ### READ All Work
@@ -108,6 +115,42 @@ Content-Type: application/json
 GET {{URL_API}}/works
 Content-Type: application/json
 
+### READ Work
+# @name readWork
+GET {{URL_API}}/works/{{WORK_ID}}
+Content-Type: application/json
+
+
+### UPDATE Work
+# @name updateWork
+PATCH {{URL_API}}/works/{{WORK_ID}}
+Content-Type: application/json
+
+{
+  //"name": "Mushoku Tensei",
+  "subtitle": "Jumento",
+  "volume": 9,
+  "price": 49.90,
+  "mediaId": "0ffa3376-e909-4520-bb0b-6007d813a597",
+  "languageId": "1ef9ba72-4449-437d-a768-5e0bf9ced2f9",
+  "serieId": "72fc3e57-1b36-4a95-8cdb-733f488f84cf",
+  "isSpecialEdition": false,
+  "authors": [
+    "177b6487-66d4-4f4f-8245-260c8d1bc01a",
+    "3ce60a7c-1fa4-4812-b921-7607abcacf10"
+
+  ],
+  "illustrators": [
+    "e5ac126d-d473-4a33-b695-8196ffba6731",
+    "943ede77-432b-4cf3-a57f-ca1e49f0a6be"
+
+  ]
+}
+
+### DELETE Work
+# @name deleteWork
+DELETE {{URL_API}}/works/{{WORK_ID}}
+Content-Type: application/json
 
 #### Authors ENDPOINTS
 ### CREATE Author
@@ -116,7 +159,7 @@ POST {{URL_API}}/authors
 Content-Type: application/json
 
 {
-  "name": "Rifujin na Magonote"
+  "name": "Daisuke Aizawa"
 }
 
 ### READ ALL Author
@@ -151,7 +194,7 @@ POST {{URL_API}}/illustrators
 Content-Type: application/json
 
 {
-  "name": "Shirotaka"
+  "name": "Touzai"
 }
 
 ### READ ALL Illustrator

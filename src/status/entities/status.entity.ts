@@ -7,7 +7,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Serie } from '../../series/entities/serie.entity';
-import { StatusType } from 'src/utils/enums/status-type.enum';
+import { StatusType } from 'src/common/enums/status-type.enum';
 
 @Entity('status')
 export class Status {

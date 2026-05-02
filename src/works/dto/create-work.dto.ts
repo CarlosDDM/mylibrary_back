@@ -1,4 +1,6 @@
+import { Transform } from 'class-transformer';
 import {
+  IsArray,
   IsBoolean,
   IsInt,
   IsNotEmpty,
@@ -11,7 +13,7 @@ import {
 
 export class CreateWorkDto {
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   name: string;
 
   @IsString()
@@ -43,4 +45,16 @@ export class CreateWorkDto {
   @IsBoolean()
   @IsOptional()
   isSpecialEdition: boolean;
+
+  @Transform(({ value }: { value: string[] }) => [...new Set(value)])
+  @IsOptional()
+  @IsArray()
+  @IsUUID('4', { each: true })
+  authors: string[] = [];
+
+  @Transform(({ value }: { value: string[] }) => [...new Set(value)])
+  @IsOptional()
+  @IsArray()
+  @IsUUID('4', { each: true })
+  illustrators: string[] = [];
 }

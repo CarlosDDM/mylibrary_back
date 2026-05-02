@@ -1,10 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateAuthorDto } from './dto/create-author.dto';
 import { UpdateAuthorDto } from './dto/update-author.dto';
 import { BaseService } from 'src/common/base.service';
 import { Author } from './entities/author.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 
 @Injectable()
 export class AuthorsService extends BaseService<Author> {
@@ -17,6 +17,14 @@ export class AuthorsService extends BaseService<Author> {
   private async validateAuthorData(dto: CreateAuthorDto | UpdateAuthorDto) {
     if (dto.name) {
       await this.validateNotExists({ name: dto.name });
+    }
+  }
+
+  async ensureAllExist(ids: string[]): Promise<void> {
+    if (ids.length === 0) return;
+    const count = await this.repository.count({ where: { id: In(ids) } });
+    if (count !== ids.length) {
+      throw new NotFoundException('Um ou mais Authors não foram encontrados');
     }
   }
 

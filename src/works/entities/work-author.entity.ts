@@ -1,9 +1,11 @@
 import {
   Column,
+  CreateDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { Work } from './work.entity';
 import { Author } from 'src/authors/entities/author.entity';
@@ -18,6 +20,12 @@ export class WorkAuthor {
 
   @Column({ name: 'author_id' })
   authorId: string;
+
+  @CreateDateColumn({ name: 'created_at' })
+  createdAt: Date;
+
+  @UpdateDateColumn({ name: 'updated_at' })
+  updatedAt: Date;
 
   @ManyToOne(() => Work, (work) => work.workAuthors, {
     onDelete: 'CASCADE',

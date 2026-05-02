@@ -12,7 +12,7 @@ export abstract class BaseService<T extends ObjectLiteral> {
   constructor(
     protected readonly repository: Repository<T>,
     private readonly entityName: string,
-    private readonly relations?: FindOptionsRelations<T>,
+    protected readonly relations?: FindOptionsRelations<T>,
   ) {}
 
   async validateExists(where: FindOptionsWhere<T>): Promise<void> {

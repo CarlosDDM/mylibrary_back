@@ -7,7 +7,8 @@ import {
   Param,
   Delete,
   ParseUUIDPipe,
-  SerializeOptions,
+  UseInterceptors,
+  ClassSerializerInterceptor,
 } from '@nestjs/common';
 import { WorksService } from './works.service';
 import { CreateWorkDto } from './dto/create-work.dto';
@@ -15,35 +16,42 @@ import { UpdateWorkDto } from './dto/update-work.dto';
 import { ResponseWorkDto } from './dto/response-work.dto';
 
 @Controller('works')
-@SerializeOptions({ type: ResponseWorkDto })
+@UseInterceptors(ClassSerializerInterceptor)
 export class WorksController {
   constructor(private readonly worksService: WorksService) {}
 
   @Post()
-  create(@Body() createWorkDto: CreateWorkDto) {
-    return this.worksService.create(createWorkDto);
+  async create(@Body() createWorkDto: CreateWorkDto) {
+    const work = await this.worksService.create(createWorkDto);
+    return new ResponseWorkDto(work as Partial<ResponseWorkDto>);
   }
 
   @Get()
-  findAll() {
-    return this.worksService.findAll();
+  async findAll() {
+    const workAll = await this.worksService.findAll();
+    return workAll.map(
+      (work) => new ResponseWorkDto(work as Partial<ResponseWorkDto>),
+    );
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseUUIDPipe) id: string) {
-    return this.worksService.findOne({ id });
+  async findOne(@Param('id', ParseUUIDPipe) id: string) {
+    const work = await this.worksService.findOne({ id });
+    return new ResponseWorkDto(work as Partial<ResponseWorkDto>);
   }
 
   @Patch(':id')
-  update(
+  async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateWorkDto: UpdateWorkDto,
   ) {
-    return this.worksService.update(+id, updateWorkDto);
+    const work = await this.worksService.update(id, updateWorkDto);
+    return new ResponseWorkDto(work as Partial<ResponseWorkDto>);
   }
 
   @Delete(':id')
-  remove(@Param('id', ParseUUIDPipe) id: string) {
-    return this.worksService.delete({ id });
+  async remove(@Param('id', ParseUUIDPipe) id: string) {
+    const work = await this.worksService.delete({ id });
+    return new ResponseWorkDto(work as Partial<ResponseWorkDto>);
   }
 }

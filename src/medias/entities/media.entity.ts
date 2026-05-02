@@ -6,7 +6,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { MediaType } from 'src/utils/enums/medias-type.enum';
+import { MediaType } from 'src/common/enums/medias-type.enum';
 import { Work } from 'src/works/entities/work.entity';
 
 @Entity('medias')

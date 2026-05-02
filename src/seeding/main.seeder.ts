@@ -1,9 +1,9 @@
 import { Language } from 'src/languages/entities/language.entity';
 import { Media } from 'src/medias/entities/media.entity';
 import { Status } from 'src/status/entities/status.entity';
-import { LanguageType } from 'src/utils/enums/language-type.enum';
-import { MediaType } from 'src/utils/enums/medias-type.enum';
-import { StatusType } from 'src/utils/enums/status-type.enum';
+import { LanguageType } from 'src/common/enums/language-type.enum';
+import { MediaType } from 'src/common/enums/medias-type.enum';
+import { StatusType } from 'src/common/enums/status-type.enum';
 import { DataSource } from 'typeorm';
 import { Seeder, SeederFactoryManager } from 'typeorm-extension';
 

@@ -2,10 +2,12 @@ import { Illustrator } from 'src/illustrators/entities/illustrator.entity';
 import { Work } from './work.entity';
 import {
   Column,
+  CreateDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 
 @Entity('work_illustrators')
@@ -18,6 +20,12 @@ export class WorkIllustrator {
 
   @Column({ name: 'illustrator_id' })
   illustratorId: string;
+
+  @CreateDateColumn({ name: 'created_at' })
+  createdAt: Date;
+
+  @UpdateDateColumn({ name: 'updated_at' })
+  updatedAt: Date;
 
   @ManyToOne(() => Work, (work) => work.workIllustrators, {
     onDelete: 'CASCADE',
