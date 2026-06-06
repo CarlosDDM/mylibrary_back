@@ -8,11 +8,13 @@ import {
   Delete,
   ParseUUIDPipe,
   SerializeOptions,
+  Query,
 } from '@nestjs/common';
 import { IllustratorsService } from './illustrators.service';
 import { CreateIllustratorDto } from './dto/create-illustrator.dto';
 import { UpdateIllustratorDto } from './dto/update-illustrator.dto';
 import { ResponseIllustratorDto } from './dto/response-illustrator.dto';
+import { PaginationDto } from 'src/common/dto/base.dto';
 
 @Controller('illustrators')
 @SerializeOptions({ type: ResponseIllustratorDto })
@@ -25,8 +27,8 @@ export class IllustratorsController {
   }
 
   @Get()
-  findAll() {
-    return this.illustratorsService.findAll();
+  findAll(@Query() paginationDto: PaginationDto) {
+    return this.illustratorsService.findAll(paginationDto);
   }
 
   @Get(':id')

@@ -6,6 +6,7 @@ import {
 import { Repository, ObjectLiteral, FindOptionsWhere } from 'typeorm';
 
 import type { FindOptionsRelations } from 'typeorm';
+import { PaginationDto } from './dto/base.dto';
 
 @Injectable()
 export abstract class BaseService<T extends ObjectLiteral> {
@@ -26,8 +27,12 @@ export abstract class BaseService<T extends ObjectLiteral> {
     if (exists) throw new ConflictException(`${this.entityName} já existe`);
   }
 
-  findAll() {
-    return this.repository.find({ relations: this.relations });
+  findAll({ take = 30, skip = 0 }: PaginationDto) {
+    return this.repository.findAndCount({
+      relations: this.relations,
+      take,
+      skip,
+    });
   }
 
   async findOne(where: FindOptionsWhere<T>) {

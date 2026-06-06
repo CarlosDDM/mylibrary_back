@@ -7,7 +7,7 @@ import {
   PrimaryGeneratedColumn,
   JoinColumn,
   UpdateDateColumn,
-  Unique,
+  Index,
 } from 'typeorm';
 import { Cover } from './cover.entity';
 import { Language } from 'src/languages/entities/language.entity';
@@ -17,7 +17,14 @@ import { WorkIllustrator } from './work-illustrator.entity';
 import { Media } from 'src/medias/entities/media.entity';
 
 @Entity('works')
-@Unique(['serieId', 'volume'])
+@Index('UQ_work_serie_volume', ['serieId', 'volume', 'isSpecialEdition'], {
+  unique: true,
+  where: '"volume" IS NOT NULL',
+})
+@Index('UQ_work_serie_volume_name', ['serieId', 'volumeName'], {
+  unique: true,
+  where: '"volume_name" IS NOT NULL',
+})
 export class Work {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -30,6 +37,9 @@ export class Work {
 
   @Column({ type: 'int', nullable: true })
   volume: number | null;
+
+  @Column({ name: 'volume_name', type: 'varchar', nullable: true })
+  volumeName: string | null;
 
   @Column({ type: 'decimal', nullable: true })
   price: number | null;

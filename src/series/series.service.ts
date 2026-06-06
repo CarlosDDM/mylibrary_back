@@ -16,7 +16,11 @@ export class SeriesService extends BaseService<Serie> {
     private readonly statusService: StatusService,
     private readonly franchiseService: FranchisesService,
   ) {
-    super(serieRepository, 'Serie', { status: true, franchise: true });
+    super(serieRepository, 'Serie', {
+      status: true,
+      franchise: true,
+      works: true,
+    });
   }
 
   private async validateSerieData(

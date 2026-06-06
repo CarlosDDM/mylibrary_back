@@ -1,5 +1,5 @@
 @URL_API=http://localhost:3000
-@SERIE_ID=0f885288-a676-49e3-9278-0e0ced086485
+@SERIE_ID=dde866e6-5a6e-4cb2-ae25-1c26fe816a67
 @FRANCHISE_ID={{createFranchise.response.body.id}}
 
 @AUTHOR_ID={{createAuthor.response.body.id}}
@@ -60,7 +60,7 @@ POST {{URL_API}}/franchises
 Content-Type: application/json
 
 {
-  "name": "No Game No Life 2"
+  "name": "Mushoku Tensei: Uma segunda chance"
 }
 
 ### READ ALL Franchise

@@ -8,11 +8,13 @@ import {
   Delete,
   SerializeOptions,
   ParseUUIDPipe,
+  Query,
 } from '@nestjs/common';
 import { AuthorsService } from './authors.service';
 import { CreateAuthorDto } from './dto/create-author.dto';
 import { UpdateAuthorDto } from './dto/update-author.dto';
 import { ResponseAuthorDto } from './dto/response-author.dto';
+import { PaginationDto } from 'src/common/dto/base.dto';
 
 @Controller('authors')
 @SerializeOptions({ type: ResponseAuthorDto })
@@ -25,8 +27,8 @@ export class AuthorsController {
   }
 
   @Get()
-  findAll() {
-    return this.authorsService.findAll();
+  findAll(@Query() paginationDto: PaginationDto) {
+    return this.authorsService.findAll(paginationDto);
   }
 
   @Get(':id')

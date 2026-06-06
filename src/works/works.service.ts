@@ -12,6 +12,7 @@ import { AuthorsService } from 'src/authors/authors.service';
 import { IllustratorsService } from 'src/illustrators/illustrators.service';
 import { WorkAuthor } from './entities/work-author.entity';
 import { WorkIllustrator } from './entities/work-illustrator.entity';
+import { PaginationDto } from 'src/common/dto/base.dto';
 
 @Injectable()
 export class WorksService extends BaseService<Work> {
@@ -204,5 +205,31 @@ export class WorksService extends BaseService<Work> {
         relations: this.relations,
       });
     });
+  }
+
+  findAll({ take = 30, skip = 0 }: PaginationDto) {
+    return this.repository
+      .createQueryBuilder('work')
+      .leftJoinAndSelect('work.serie', 'serie')
+      .leftJoinAndSelect('work.media', 'media')
+      .leftJoinAndSelect('work.language', 'language')
+      .leftJoinAndSelect('work.covers', 'covers')
+      .leftJoinAndSelect('work.workAuthors', 'workAuthors')
+      .leftJoinAndSelect('work.workIllustrators', 'workIllustrators')
+      .addSelect(
+        `CASE
+        WHEN work.is_special_edition = true THEN 0
+        WHEN work.volume IS NOT NULL OR work.volume_name IS NOT NULL THEN 1
+        ELSE 2
+      END`,
+        'sort_order',
+      )
+      .orderBy('sort_order', 'ASC')
+      .addOrderBy('work.volume', 'ASC', 'NULLS LAST')
+      .addOrderBy('work.volumeName', 'ASC', 'NULLS LAST')
+      .addOrderBy('work.updatedAt', 'DESC')
+      .take(take)
+      .skip(skip)
+      .getManyAndCount();
   }
 }

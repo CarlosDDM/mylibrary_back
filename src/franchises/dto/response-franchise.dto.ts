@@ -1,7 +1,8 @@
-import { Expose, Type } from 'class-transformer';
+import { Exclude, Expose, Type } from 'class-transformer';
 import { ResponseSeriesDto } from 'src/series/dto/response-series.dto';
 
-export class ResponseFranchise {
+@Exclude()
+export class ResponseFranchiseDto {
   @Expose()
   id: string;
 
@@ -11,4 +12,8 @@ export class ResponseFranchise {
   @Expose()
   @Type(() => ResponseSeriesDto)
   series: ResponseSeriesDto[];
+
+  constructor(partial: unknown) {
+    Object.assign(this, partial);
+  }
 }

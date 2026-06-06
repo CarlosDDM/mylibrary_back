@@ -19,7 +19,7 @@ export class MainSeeder implements Seeder {
     const MediasTypes = await MediaRepo.save([
       { type: MediaType.LIGHT_NOVEL },
       { type: MediaType.MANGA },
-      { type: MediaType.BOOKS },
+      { type: MediaType.BOOK },
     ]);
 
     const StatusRepo = dataSource.getRepository(Status);

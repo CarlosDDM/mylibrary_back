@@ -1,4 +1,5 @@
 import { Exclude, Expose, Type } from 'class-transformer';
+import { ResponseFranchiseDto } from 'src/franchises/dto/response-franchise.dto';
 import { OptionsType } from 'src/options/dto/response-option.dto';
 import { ResponseWorkDto } from 'src/works/dto/response-work.dto';
 
@@ -22,6 +23,10 @@ export class ResponseSeriesDto {
   works: ResponseWorkDto[];
 
   @Expose()
-  @Type(() => ResponseSeriesDto)
-  franchise: ResponseSeriesDto | null;
+  @Type(() => ResponseFranchiseDto)
+  franchise: ResponseFranchiseDto | null;
+
+  constructor(partial: unknown) {
+    Object.assign(this, partial);
+  }
 }
