@@ -220,3 +220,8 @@ Content-Type: application/json
 # @name deleteIllustrator
 DELETE {{URL_API}}/illustrators/{{ILLUSTRATOR_ID}}
 Content-Type: application/json
+
+### READ All Work
+# @name readDashBoardStats
+GET {{URL_API}}/dashboard/statistics
+Content-Type: application/json
