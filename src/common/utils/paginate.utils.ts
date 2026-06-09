@@ -8,5 +8,6 @@ export function paginate<T>(
     data,
     pages: Math.ceil(total / take),
     current_page: Math.floor(skip / take) + 1,
+    total,
   };
 }
