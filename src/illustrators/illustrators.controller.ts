@@ -15,6 +15,8 @@ import { CreateIllustratorDto } from './dto/create-illustrator.dto';
 import { UpdateIllustratorDto } from './dto/update-illustrator.dto';
 import { ResponseIllustratorDto } from './dto/response-illustrator.dto';
 import { PaginationDto } from 'src/common/dto/base.dto';
+import { PaginatedIllustratorResponse } from './dto/paginated-illustrator.dto';
+import { paginate } from 'src/common/dto/response-paginated.dto';
 
 @Controller('illustrators')
 @SerializeOptions({ type: ResponseIllustratorDto })
@@ -27,8 +29,11 @@ export class IllustratorsController {
   }
 
   @Get()
-  findAll(@Query() paginationDto: PaginationDto) {
-    return this.illustratorsService.findAll(paginationDto);
+  @SerializeOptions({ type: PaginatedIllustratorResponse })
+  async findAll(@Query() paginationDto: PaginationDto) {
+    const [illustrators, total] =
+      await this.illustratorsService.findAll(paginationDto);
+    return paginate([illustrators, total], paginationDto);
   }
 
   @Get(':id')

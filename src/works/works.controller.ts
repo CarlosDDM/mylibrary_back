@@ -7,46 +7,39 @@ import {
   Param,
   Delete,
   ParseUUIDPipe,
-  UseInterceptors,
-  ClassSerializerInterceptor,
   Query,
+  SerializeOptions,
 } from '@nestjs/common';
 import { WorksService } from './works.service';
 import { CreateWorkDto } from './dto/create-work.dto';
 import { UpdateWorkDto } from './dto/update-work.dto';
 import { ResponseWorkDto } from './dto/response-work.dto';
-import { PaginationDto } from 'src/common/dto/base.dto';
-import { paginate } from 'src/common/utils/paginate.utils';
+import { FilterWorkDto } from './dto/filter-work.dto';
+import { paginate } from 'src/common/dto/response-paginated.dto';
+import { PaginatedWorkResponse } from './dto/paginated-work.dto';
 
 @Controller('works')
-@UseInterceptors(ClassSerializerInterceptor)
+@SerializeOptions({ type: ResponseWorkDto })
 export class WorksController {
   constructor(private readonly worksService: WorksService) {}
 
   @Post()
   async create(@Body() createWorkDto: CreateWorkDto) {
     const work = await this.worksService.create(createWorkDto);
-    return new ResponseWorkDto(work as Partial<ResponseWorkDto>);
+    return work;
   }
 
   @Get()
-  async findAll(@Query() paginationDto: PaginationDto) {
-    const [works, total] = await this.worksService.findAll(paginationDto);
-    return paginate(
-      [
-        works.map(
-          (work) => new ResponseWorkDto(work as Partial<ResponseWorkDto>),
-        ),
-        total,
-      ],
-      paginationDto,
-    );
+  @SerializeOptions({ type: PaginatedWorkResponse })
+  async findAll(@Query() filterDto: FilterWorkDto) {
+    const [works, total] = await this.worksService.findAll(filterDto);
+    return paginate([works, total], filterDto);
   }
 
   @Get(':id')
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
     const work = await this.worksService.findOne({ id });
-    return new ResponseWorkDto(work as Partial<ResponseWorkDto>);
+    return work;
   }
 
   @Patch(':id')
@@ -55,12 +48,12 @@ export class WorksController {
     @Body() updateWorkDto: UpdateWorkDto,
   ) {
     const work = await this.worksService.update(id, updateWorkDto);
-    return new ResponseWorkDto(work as Partial<ResponseWorkDto>);
+    return work;
   }
 
   @Delete(':id')
   async remove(@Param('id', ParseUUIDPipe) id: string) {
     const work = await this.worksService.delete({ id });
-    return new ResponseWorkDto(work as Partial<ResponseWorkDto>);
+    return work;
   }
 }

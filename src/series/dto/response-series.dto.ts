@@ -25,8 +25,4 @@ export class ResponseSeriesDto {
   @Expose()
   @Type(() => ResponseFranchiseDto)
   franchise: ResponseFranchiseDto | null;
-
-  constructor(partial: unknown) {
-    Object.assign(this, partial);
-  }
 }

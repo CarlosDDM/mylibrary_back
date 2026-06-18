@@ -10,87 +10,54 @@ import { ResponseIllustratorDto } from 'src/illustrators/dto/response-illustrato
 import { OptionsType } from 'src/options/dto/response-option.dto';
 import { ResponseSeriesDto } from 'src/series/dto/response-series.dto';
 
-export class ResponseWorkAuthorDto {
-  @Expose()
-  @Type(() => ResponseAuthorDto)
-  author: ResponseAuthorDto;
-}
-
-export class ResponseWorkIllustratorDto {
-  @Expose()
-  @Type(() => ResponseIllustratorDto)
-  illustrator: ResponseIllustratorDto;
-}
-
-type WorkAuthorRaw = {
-  author: ResponseWorkAuthorDto;
-};
-
-type WorkIllustratorRaw = {
-  illustrator: ResponseWorkIllustratorDto;
+type WorkRaw = {
+  workAuthors?: { author: { id: string; name: string } }[];
+  workIllustrators?: { illustrator: { id: string; name: string } }[];
 };
 
 @Exclude()
 export class ResponseWorkDto {
-  @Expose()
-  id: string;
+  @Expose() id: string;
+  @Expose() name: string;
+  @Expose() subtitle: string | null;
+  @Expose() volume: number | null;
 
   @Expose()
-  name: string;
-
-  @Expose()
-  subtitle: string | null;
-
-  @Expose()
-  volume: number | null;
-
-  @Expose()
-  @Transform(({ value }: { value: string }) => Number(value))
+  @Transform(({ value }: { value: string | null }) =>
+    value == null ? null : Number(value),
+  )
   price: number | null;
 
-  @Expose()
-  isSpecialEdition: boolean;
+  @Expose() isSpecialEdition: boolean;
+
+  @Expose() @Type(() => OptionsType) language: OptionsType | null;
+  @Expose() @Type(() => OptionsType) media: OptionsType | null;
 
   @Expose()
-  @Type(() => OptionsType)
-  language: OptionsType | null;
-
-  @Expose()
-  @Type(() => OptionsType)
-  media: OptionsType | null;
-
-  @Expose({ name: 'authors' })
   @Transform(
-    ({ value }: { value: WorkAuthorRaw[] | null }) =>
-      value?.map((item) =>
+    ({ obj }: { obj: WorkRaw }) =>
+      obj.workAuthors?.map((item) =>
         plainToInstance(ResponseAuthorDto, item.author, {
           excludeExtraneousValues: true,
         }),
       ) ?? [],
+    { toClassOnly: true },
   )
-  workAuthors: ResponseWorkAuthorDto[] | null;
+  authors: ResponseAuthorDto[];
 
-  @Expose({ name: 'illustrators' })
+  @Expose()
   @Transform(
-    ({ value }: { value: WorkIllustratorRaw[] | null }) =>
-      value?.map((item) =>
+    ({ obj }: { obj: WorkRaw }) =>
+      obj.workIllustrators?.map((item) =>
         plainToInstance(ResponseIllustratorDto, item.illustrator, {
           excludeExtraneousValues: true,
         }),
       ) ?? [],
+    { toClassOnly: true },
   )
-  workIllustrators: ResponseWorkIllustratorDto[] | null;
+  illustrators: ResponseIllustratorDto[];
 
   @Expose()
-  @Transform(({ value }: { value: ResponseSeriesDto | null }) =>
-    value
-      ? plainToInstance(ResponseSeriesDto, value, {
-          excludeExtraneousValues: true,
-        })
-      : null,
-  )
+  @Type(() => ResponseSeriesDto)
   serie: ResponseSeriesDto | null;
-  constructor(partial: unknown) {
-    Object.assign(this, partial);
-  }
 }

@@ -13,8 +13,10 @@ import {
 import { AuthorsService } from './authors.service';
 import { CreateAuthorDto } from './dto/create-author.dto';
 import { UpdateAuthorDto } from './dto/update-author.dto';
-import { ResponseAuthorDto } from './dto/response-author.dto';
 import { PaginationDto } from 'src/common/dto/base.dto';
+import { PaginatedAuthorResponse } from './dto/pagination-author.dto';
+import { paginate } from 'src/common/dto/response-paginated.dto';
+import { ResponseAuthorDto } from './dto/response-author.dto';
 
 @Controller('authors')
 @SerializeOptions({ type: ResponseAuthorDto })
@@ -27,8 +29,10 @@ export class AuthorsController {
   }
 
   @Get()
-  findAll(@Query() paginationDto: PaginationDto) {
-    return this.authorsService.findAll(paginationDto);
+  @SerializeOptions({ type: PaginatedAuthorResponse })
+  async findAll(@Query() paginationDto: PaginationDto) {
+    const [authors, total] = await this.authorsService.findAll(paginationDto);
+    return paginate([authors, total], paginationDto);
   }
 
   @Get(':id')

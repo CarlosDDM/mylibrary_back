@@ -19,7 +19,12 @@ export class SeriesService extends BaseService<Serie> {
     super(serieRepository, 'Serie', {
       status: true,
       franchise: true,
-      works: true,
+      works: {
+        language: true,
+        media: true,
+        workAuthors: { author: true },
+        workIllustrators: { illustrator: true },
+      },
     });
   }
 

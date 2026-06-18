@@ -9,18 +9,17 @@ import {
   ParseUUIDPipe,
   SerializeOptions,
   Query,
-  UseInterceptors,
-  ClassSerializerInterceptor,
 } from '@nestjs/common';
 import { FranchisesService } from './franchises.service';
 import { CreateFranchiseDto } from './dto/create-franchise.dto';
 import { UpdateFranchiseDto } from './dto/update-franchise.dto';
 import { PaginationDto } from 'src/common/dto/base.dto';
-import { paginate } from 'src/common/utils/paginate.utils';
-import { ResponseFranchiseDto } from './dto/response-franchise.dto';
+import { PaginatedFranchiseAuthor } from './dto/paginated-franchise.dto';
+import { paginate } from 'src/common/dto/response-paginated.dto';
+import { ResponseAuthorDto } from 'src/authors/dto/response-author.dto';
 
 @Controller('franchises')
-@UseInterceptors(ClassSerializerInterceptor)
+@SerializeOptions({ type: ResponseAuthorDto })
 export class FranchisesController {
   constructor(private readonly franchisesService: FranchisesService) {}
 
@@ -30,16 +29,11 @@ export class FranchisesController {
   }
 
   @Get()
+  @SerializeOptions({ type: PaginatedFranchiseAuthor })
   async findAll(@Query() paginationDto: PaginationDto) {
     const [franchises, total] =
       await this.franchisesService.findAll(paginationDto);
-    return paginate(
-      [
-        franchises.map((franchise) => new ResponseFranchiseDto(franchise)),
-        total,
-      ],
-      paginationDto,
-    );
+    return paginate([franchises, total], paginationDto);
   }
 
   @Get(':id')

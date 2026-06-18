@@ -30,6 +30,7 @@ export abstract class BaseService<T extends ObjectLiteral> {
   findAll({ take = 30, skip = 0 }: PaginationDto) {
     return this.repository.findAndCount({
       relations: this.relations,
+      relationLoadStrategy: 'query',
       take,
       skip,
     });

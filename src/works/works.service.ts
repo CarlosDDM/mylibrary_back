@@ -12,7 +12,7 @@ import { AuthorsService } from 'src/authors/authors.service';
 import { IllustratorsService } from 'src/illustrators/illustrators.service';
 import { WorkAuthor } from './entities/work-author.entity';
 import { WorkIllustrator } from './entities/work-illustrator.entity';
-import { PaginationDto } from 'src/common/dto/base.dto';
+import { FilterWorkDto } from './dto/filter-work.dto';
 
 @Injectable()
 export class WorksService extends BaseService<Work> {
@@ -207,15 +207,69 @@ export class WorksService extends BaseService<Work> {
     });
   }
 
-  findAll({ take = 30, skip = 0 }: PaginationDto) {
-    return this.repository
+  findAll({
+    take = 30,
+    skip = 0,
+    mediaIds,
+    languageIds,
+    authorIds,
+    illustratorIds,
+    isSpecialEdition,
+  }: FilterWorkDto) {
+    const qb = this.repository
       .createQueryBuilder('work')
       .leftJoinAndSelect('work.serie', 'serie')
       .leftJoinAndSelect('work.media', 'media')
       .leftJoinAndSelect('work.language', 'language')
       .leftJoinAndSelect('work.covers', 'covers')
       .leftJoinAndSelect('work.workAuthors', 'workAuthors')
+      .leftJoinAndSelect('workAuthors.author', 'author') // ← novo
       .leftJoinAndSelect('work.workIllustrators', 'workIllustrators')
+      .leftJoinAndSelect('workIllustrators.illustrator', 'illustrator'); // ← novo
+    // valor único — filtra pelo alias já joinado, sem multiplicar linha
+    if (mediaIds?.length) {
+      qb.andWhere('media.id IN (:...mediaIds)', { mediaIds });
+    }
+    if (languageIds?.length) {
+      qb.andWhere('language.id IN (:...languageIds)', { languageIds });
+    }
+    if (isSpecialEdition !== undefined) {
+      qb.andWhere('work.isSpecialEdition = :isSpecialEdition', {
+        isSpecialEdition,
+      });
+    }
+
+    // *-to-many — EXISTS pra não truncar o leftJoinAndSelect dos autores/ilustradores
+    if (authorIds?.length) {
+      qb.andWhere(
+        (sub) =>
+          'EXISTS ' +
+          sub
+            .subQuery()
+            .select('1')
+            .from(WorkAuthor, 'wa')
+            .where('wa.workId = work.id')
+            .andWhere('wa.authorId IN (:...authorIds)')
+            .getQuery(),
+        { authorIds },
+      );
+    }
+    if (illustratorIds?.length) {
+      qb.andWhere(
+        (sub) =>
+          'EXISTS ' +
+          sub
+            .subQuery()
+            .select('1')
+            .from(WorkIllustrator, 'wi')
+            .where('wi.workId = work.id')
+            .andWhere('wi.illustratorId IN (:...illustratorIds)')
+            .getQuery(),
+        { illustratorIds },
+      );
+    }
+
+    return qb
       .addSelect(
         `CASE
         WHEN work.is_special_edition = true THEN 0

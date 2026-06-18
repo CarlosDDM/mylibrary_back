@@ -5,7 +5,7 @@ export class PaginationDto {
   @IsOptional()
   @Type(() => Number)
   @IsInt()
-  take?: number = 30;
+  take?: number = 20;
 
   @IsOptional()
   @Type(() => Number)

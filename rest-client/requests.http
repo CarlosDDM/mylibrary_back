@@ -225,3 +225,65 @@ Content-Type: application/json
 # @name readDashBoardStats
 GET {{URL_API}}/dashboard/statistics
 Content-Type: application/json
+
+
+
+####
+
+@mediaLightNovel = 343e01d8-3b30-4fdf-bc77-7dd15edea8fd
+@mediaManga = eb52815e-c620-4c75-9982-c4a044229fdf
+@mediaBook = d435b307-0b1f-46f8-9e32-d088fc15bff9
+@langPtBr = 0ed5c155-7ae1-4f76-ac22-298cf3547654
+@langEn = 37d038bc-bc56-4317-8398-a2451d26f917
+@authorRifujin = f8a8d2b0-aec7-453a-8f3f-a2a8ac39404f
+@authorDaisuke = 81de30e9-09a4-4907-a3cf-54acb8b36ac8
+@authorYoshitoki = 59594a79-e024-462e-aee8-63dba84bfd12
+@illustratorShirotaka = 17d7edb5-50c2-487c-9a6f-2b90417fa5af
+
+### baseline — sem filtro, deve voltar igual a antes
+# @name readAllWork
+GET {{URL_API}}/works
+
+### paginação
+# @name worksPaginated
+GET {{URL_API}}/works?take=2&skip=0
+
+### só light novels
+# @name worksLightNovel
+GET {{URL_API}}/works?mediaIds={{mediaLightNovel}}
+
+### manga + book (array = repetir o param)
+# @name worksMangaBook
+GET {{URL_API}}/works?mediaIds={{mediaManga}}&mediaIds={{mediaBook}}
+
+### por idioma pt-br
+# @name worksPtBr
+GET {{URL_API}}/works?languageIds={{langPtBr}}
+
+### só edições especiais
+# @name worksSpecial
+GET {{URL_API}}/works?isSpecialEdition=true
+
+### só comuns
+# @name worksCommon
+GET {{URL_API}}/works?isSpecialEdition=false
+
+### por autor (Rifujin) — testa o EXISTS
+# @name worksByRifujin
+GET {{URL_API}}/works?authorIds={{authorRifujin}}
+
+### dois autores (Rifujin OU Daisuke)
+# @name worksByTwoAuthors
+GET {{URL_API}}/works?authorIds={{authorRifujin}}&authorIds={{authorYoshitoki}}
+
+### por ilustrador (Shirotaka)
+# @name worksByShirotaka
+GET {{URL_API}}/works?illustratorIds={{illustratorShirotaka}}
+
+### combinado — manga, em inglês, só comuns
+# @name worksCombined
+GET {{URL_API}}/works?mediaIds={{mediaManga}}&languageIds={{langEn}}&isSpecialEdition=false
+
+### id inválido — deve dar 400
+# @name worksInvalidId
+GET {{URL_API}}/works?mediaIds=not-a-uuid

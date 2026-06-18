@@ -8,18 +8,18 @@ import {
   Delete,
   ParseUUIDPipe,
   Query,
-  UseInterceptors,
-  ClassSerializerInterceptor,
+  SerializeOptions,
 } from '@nestjs/common';
 import { SeriesService } from './series.service';
 import { CreateSeriesDto } from './dto/create-series.dto';
 import { UpdateSeriesDto } from './dto/update-series.dto';
-import { ResponseSeriesDto } from './dto/response-series.dto';
 import { PaginationDto } from 'src/common/dto/base.dto';
-import { paginate } from 'src/common/utils/paginate.utils';
+import { paginate } from 'src/common/dto/response-paginated.dto';
+import { PaginatedSeriesResponse } from './dto/paginated-series.dto';
+import { ResponseSeriesDto } from './dto/response-series.dto';
 
 @Controller('series')
-@UseInterceptors(ClassSerializerInterceptor)
+@SerializeOptions({ type: ResponseSeriesDto })
 export class SeriesController {
   constructor(private readonly seriesService: SeriesService) {}
 
@@ -29,12 +29,10 @@ export class SeriesController {
   }
 
   @Get()
+  @SerializeOptions({ type: PaginatedSeriesResponse })
   async findAll(@Query() paginationDto: PaginationDto) {
     const [series, total] = await this.seriesService.findAll(paginationDto);
-    return paginate(
-      [series.map((serie) => new ResponseSeriesDto(serie)), total],
-      paginationDto,
-    );
+    return paginate([series, total], paginationDto);
   }
 
   @Get(':id')
