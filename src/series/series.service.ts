@@ -7,6 +7,8 @@ import { Repository } from 'typeorm';
 import { StatusService } from 'src/status/status.service';
 import { FranchisesService } from 'src/franchises/franchises.service';
 import { BaseService } from 'src/common/base.service';
+import { PaginationDto } from 'src/common/dto/base.dto';
+import { FilterSerieDto } from './dto/filter-serie-dto';
 
 @Injectable()
 export class SeriesService extends BaseService<Serie> {
@@ -69,5 +71,36 @@ export class SeriesService extends BaseService<Serie> {
     await this.repository.update({ id }, updateSeriesDto);
 
     return this.findOne({ id });
+  }
+
+  async findAll({
+    take = 20,
+    skip = 0,
+    franchiseIds,
+    statusIds,
+  }: FilterSerieDto): Promise<[Serie[], number]> {
+    const qb = this.repository
+      .createQueryBuilder('serie')
+      .leftJoinAndSelect('serie.status', 'status')
+      .leftJoinAndSelect('serie.franchise', 'franchise')
+      .leftJoinAndSelect('serie.works', 'works')
+      .leftJoinAndSelect('works.language', 'language')
+      .leftJoinAndSelect('works.media', 'media')
+      .leftJoinAndSelect('works.workAuthors', 'workAuthors')
+      .leftJoinAndSelect('workAuthors.author', 'author')
+      .leftJoinAndSelect('works.workIllustrators', 'workIllustrators')
+      .leftJoinAndSelect('workIllustrators.illustrator', 'illustrator')
+      .take(take)
+      .skip(skip);
+
+    if (franchiseIds?.length) {
+      qb.andWhere('franchise.id IN (:...franchiseIds)', { franchiseIds });
+    }
+
+    if (statusIds?.length) {
+      qb.andWhere('status.id IN (:...statusIds)', { statusIds });
+    }
+
+    return qb.getManyAndCount();
   }
 }

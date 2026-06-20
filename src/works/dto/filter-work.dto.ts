@@ -1,9 +1,7 @@
 import { IsOptional, IsArray, IsUUID, IsBoolean } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { PaginationDto } from 'src/common/dto/base.dto';
-
-const toArray = ({ value }) =>
-  value == null ? value : Array.isArray(value) ? value : [value];
+import { toArray } from 'src/common/utils/to-array.utils';
 
 export class FilterWorkDto extends PaginationDto {
   @IsOptional()

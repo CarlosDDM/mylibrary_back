@@ -17,6 +17,7 @@ import { PaginationDto } from 'src/common/dto/base.dto';
 import { paginate } from 'src/common/dto/response-paginated.dto';
 import { PaginatedSeriesResponse } from './dto/paginated-series.dto';
 import { ResponseSeriesDto } from './dto/response-series.dto';
+import { FilterSerieDto } from './dto/filter-serie-dto';
 
 @Controller('series')
 @SerializeOptions({ type: ResponseSeriesDto })
@@ -30,9 +31,9 @@ export class SeriesController {
 
   @Get()
   @SerializeOptions({ type: PaginatedSeriesResponse })
-  async findAll(@Query() paginationDto: PaginationDto) {
-    const [series, total] = await this.seriesService.findAll(paginationDto);
-    return paginate([series, total], paginationDto);
+  async findAll(@Query() filterSerieDto: FilterSerieDto) {
+    const [series, total] = await this.seriesService.findAll(filterSerieDto);
+    return paginate([series, total], filterSerieDto);
   }
 
   @Get(':id')
