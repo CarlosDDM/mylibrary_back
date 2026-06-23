@@ -226,6 +226,13 @@ Content-Type: application/json
 GET {{URL_API}}/dashboard/statistics
 Content-Type: application/json
 
+### READ Search
+# @name readDashBoardStats
+GET {{URL_API}}/search?name=mushoku
+Content-Type: application/json
+
+
+
 
 
 ####

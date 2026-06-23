@@ -1,9 +1,13 @@
 import { Transform } from 'class-transformer';
-import { IsArray, IsOptional, IsUUID } from 'class-validator';
+import { IsArray, IsOptional, IsString, IsUUID } from 'class-validator';
 import { PaginationDto } from 'src/common/dto/base.dto';
 import { toArray } from 'src/common/utils/to-array.utils';
 
 export class FilterSerieDto extends PaginationDto {
+  @IsOptional()
+  @IsString()
+  name?: string;
+
   @IsOptional()
   @IsArray()
   @IsUUID('4', { each: true })

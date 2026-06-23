@@ -210,6 +210,7 @@ export class WorksService extends BaseService<Work> {
   findAll({
     take = 30,
     skip = 0,
+    name,
     mediaIds,
     languageIds,
     authorIds,
@@ -227,6 +228,9 @@ export class WorksService extends BaseService<Work> {
       .leftJoinAndSelect('work.workIllustrators', 'workIllustrators')
       .leftJoinAndSelect('workIllustrators.illustrator', 'illustrator'); // ← novo
     // valor único — filtra pelo alias já joinado, sem multiplicar linha
+    if (name) {
+      qb.andWhere('work.name ILIKE :name', { name: `%${name}%` });
+    }
     if (mediaIds?.length) {
       qb.andWhere('media.id IN (:...mediaIds)', { mediaIds });
     }

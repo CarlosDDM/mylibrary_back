@@ -7,7 +7,6 @@ import { Repository } from 'typeorm';
 import { StatusService } from 'src/status/status.service';
 import { FranchisesService } from 'src/franchises/franchises.service';
 import { BaseService } from 'src/common/base.service';
-import { PaginationDto } from 'src/common/dto/base.dto';
 import { FilterSerieDto } from './dto/filter-serie-dto';
 
 @Injectable()
@@ -76,6 +75,7 @@ export class SeriesService extends BaseService<Serie> {
   async findAll({
     take = 20,
     skip = 0,
+    name,
     franchiseIds,
     statusIds,
   }: FilterSerieDto): Promise<[Serie[], number]> {
@@ -92,6 +92,10 @@ export class SeriesService extends BaseService<Serie> {
       .leftJoinAndSelect('workIllustrators.illustrator', 'illustrator')
       .take(take)
       .skip(skip);
+
+    if (name) {
+      qb.andWhere('serie.name ILIKE :name', { name: `%${name}%` });
+    }
 
     if (franchiseIds?.length) {
       qb.andWhere('franchise.id IN (:...franchiseIds)', { franchiseIds });

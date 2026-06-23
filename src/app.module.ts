@@ -12,6 +12,7 @@ import { StatusModule } from './status/status.module';
 import { MediasModule } from './medias/medias.module';
 import { LanguagesModule } from './languages/languages.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { SearchModule } from './search/search.module';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
     MediasModule,
     LanguagesModule,
     DashboardModule,
+    SearchModule,
   ],
 })
 export class AppModule {}

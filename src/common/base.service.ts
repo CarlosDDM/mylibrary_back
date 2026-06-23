@@ -27,12 +27,13 @@ export abstract class BaseService<T extends ObjectLiteral> {
     if (exists) throw new ConflictException(`${this.entityName} já existe`);
   }
 
-  findAll({ take = 30, skip = 0 }: PaginationDto) {
+  findAll({ take = 20, skip = 0 }: PaginationDto, where?: FindOptionsWhere<T>) {
     return this.repository.findAndCount({
       relations: this.relations,
       relationLoadStrategy: 'query',
       take,
       skip,
+      where,
     });
   }
 
@@ -53,5 +54,20 @@ export abstract class BaseService<T extends ObjectLiteral> {
     const result = await this.findOne(where);
     await this.repository.delete(where);
     return result;
+  }
+
+  protected findAllBase(
+    { take = 20, skip = 0 }: PaginationDto,
+    where?: FindOptionsWhere<T>,
+  ) {
+    return this.repository.findAndCount({
+      where,
+      take,
+      skip,
+    });
+  }
+
+  search({ take = 10, skip = 0 }: PaginationDto, where: FindOptionsWhere<T>) {
+    return this.findAllBase({ take, skip }, where);
   }
 }

@@ -22,5 +22,6 @@ import { IllustratorsModule } from 'src/illustrators/illustrators.module';
   ],
   controllers: [WorksController],
   providers: [WorksService],
+  exports: [WorksService],
 })
 export class WorksModule {}
