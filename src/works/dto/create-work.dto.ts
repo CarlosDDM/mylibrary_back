@@ -25,6 +25,10 @@ export class CreateWorkDto {
   @IsOptional()
   volume: number | null;
 
+  @IsString()
+  @IsOptional()
+  volumeName: string | null;
+
   @IsOptional()
   @IsNumber()
   @Min(0)

@@ -221,6 +221,33 @@ Content-Type: application/json
 DELETE {{URL_API}}/illustrators/{{ILLUSTRATOR_ID}}
 Content-Type: application/json
 
+#### User ENDPOINTS
+
+### CREATE Users
+# @name createUser
+POST {{URL_API}}/users
+Content-Type: application/json
+
+{
+  "username": "macaco",
+  "password": "Macaco@123"
+}
+
+### Get All Users
+# @name getAllUser
+GET {{URL_API}}/users
+Content-Type: application/json
+
+### PATCH User password
+# @name changeUserPassword
+PATCH {{URL_API}}/users/0f1f2547-03ae-4b9e-9e82-67c1a743cd44/password
+Content-Type: application/json
+
+{
+  "currentPassword": "Ramadeuprocavalo@123",
+  "newPassword": "Macaco@123"
+}
+
 ### READ All Work
 # @name readDashBoardStats
 GET {{URL_API}}/dashboard/statistics

@@ -64,10 +64,18 @@ export class WorksService extends BaseService<Work> {
       await this.illustratorService.ensureAllExist(dto.illustrators);
     }
 
-    if (validateWork && dto.volume && dto.serieId) {
+    if (validateWork && dto.volumeName && dto.serieId) {
+      await this.validateNotExists({
+        serieId: dto.serieId,
+        volumeName: dto.volumeName,
+      });
+    }
+
+    if (validateWork && dto.volume != null && dto.serieId) {
       await this.validateNotExists({
         serieId: dto.serieId,
         volume: dto.volume,
+        isSpecialEdition: dto.isSpecialEdition ?? false,
       });
     }
   }
@@ -224,10 +232,9 @@ export class WorksService extends BaseService<Work> {
       .leftJoinAndSelect('work.language', 'language')
       .leftJoinAndSelect('work.covers', 'covers')
       .leftJoinAndSelect('work.workAuthors', 'workAuthors')
-      .leftJoinAndSelect('workAuthors.author', 'author') // ← novo
+      .leftJoinAndSelect('workAuthors.author', 'author')
       .leftJoinAndSelect('work.workIllustrators', 'workIllustrators')
-      .leftJoinAndSelect('workIllustrators.illustrator', 'illustrator'); // ← novo
-    // valor único — filtra pelo alias já joinado, sem multiplicar linha
+      .leftJoinAndSelect('workIllustrators.illustrator', 'illustrator');
     if (name) {
       qb.andWhere('work.name ILIKE :name', { name: `%${name}%` });
     }
@@ -243,7 +250,6 @@ export class WorksService extends BaseService<Work> {
       });
     }
 
-    // *-to-many — EXISTS pra não truncar o leftJoinAndSelect dos autores/ilustradores
     if (authorIds?.length) {
       qb.andWhere(
         (sub) =>

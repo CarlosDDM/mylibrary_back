@@ -46,5 +46,6 @@ import { SearchModule } from './search/search.module';
     DashboardModule,
     SearchModule,
   ],
+  providers: [],
 })
 export class AppModule {}

@@ -21,6 +21,7 @@ export class ResponseWorkDto {
   @Expose() name: string;
   @Expose() subtitle: string | null;
   @Expose() volume: number | null;
+  @Expose() volumeName: string | null;
 
   @Expose()
   @Transform(({ value }: { value: string | null }) =>
