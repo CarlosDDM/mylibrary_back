@@ -321,3 +321,30 @@ GET {{URL_API}}/works?mediaIds={{mediaManga}}&languageIds={{langEn}}&isSpecialEd
 ### id inválido — deve dar 400
 # @name worksInvalidId
 GET {{URL_API}}/works?mediaIds=not-a-uuid
+
+#### Auth ENDPOINTS
+
+### LOGIN — sucesso: 200 + header Set-Cookie (connect.sid). REST Client guarda o cookie.
+# @name login
+POST {{URL_API}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "macaco",
+  "password": "Macaco@123"
+}
+
+### LOGIN — credenciais erradas: deve dar 401
+# @name loginWrong
+POST {{URL_API}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "macaco",
+  "password": "senhaErrada"
+}
+
+### REQUISIÇÃO AUTENTICADA — roda DEPOIS do login; o cookie de sessão vai junto automaticamente
+# @name authedRequest
+GET {{URL_API}}/users
+Content-Type: application/json

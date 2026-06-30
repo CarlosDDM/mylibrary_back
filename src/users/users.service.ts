@@ -86,4 +86,8 @@ export class UsersService extends BaseService<User> {
 
     await this.repository.update({ id }, { hashedPassword });
   }
+
+  findOneOrNull(username: string) {
+    return this.repository.findOneBy({ username });
+  }
 }

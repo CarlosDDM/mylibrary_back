@@ -9,6 +9,7 @@ import {
   ParseUUIDPipe,
   Query,
   SerializeOptions,
+  UseGuards,
 } from '@nestjs/common';
 import { WorksService } from './works.service';
 import { CreateWorkDto } from './dto/create-work.dto';
@@ -17,6 +18,7 @@ import { ResponseWorkDto } from './dto/response-work.dto';
 import { FilterWorkDto } from './dto/filter-work.dto';
 import { paginate } from 'src/common/dto/response-paginated.dto';
 import { PaginatedWorkResponse } from './dto/paginated-work.dto';
+import { AuthenticatedGuard } from 'src/auth/guards/authenticated.guard';
 
 @Controller('works')
 @SerializeOptions({ type: ResponseWorkDto })

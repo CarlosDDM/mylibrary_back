@@ -5,6 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import session from 'express-session';
 import { createClient } from 'redis';
 import { RedisStore } from 'connect-redis';
+import passport from 'passport';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -46,17 +47,21 @@ async function bootstrap() {
   app.use(
     session({
       store: redisStore,
-      resave: false, // required: force lightweight session keep alive (touch)
-      saveUninitialized: false, // recommended: only save session when data exists
+      resave: false,
+      saveUninitialized: false,
       secret: config.get<string>('SESSION_SECRET')!,
+      name: config.get<string>('COOKIE_NAME')!,
       cookie: {
-        httpOnly: true, // JS can't read the cookie (XSS protection)
-        secure: config.get<string>('NODE_ENV') === 'production', // HTTPS only in prod
+        httpOnly: true,
+        secure: config.get<string>('NODE_ENV') === 'production',
         sameSite: 'lax',
         maxAge: 1000 * 60 * 60 * 24, // 1 day
       },
     }),
   );
+
+  app.use(passport.initialize());
+  app.use(passport.session());
 
   await app.listen(process.env.PORT ?? 3000);
 }

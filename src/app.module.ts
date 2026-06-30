@@ -13,6 +13,7 @@ import { MediasModule } from './medias/medias.module';
 import { LanguagesModule } from './languages/languages.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { SearchModule } from './search/search.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { SearchModule } from './search/search.module';
     LanguagesModule,
     DashboardModule,
     SearchModule,
+    AuthModule,
   ],
   providers: [],
 })
