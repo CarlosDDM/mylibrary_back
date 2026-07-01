@@ -15,7 +15,7 @@ export class AuthService {
 
     if (
       !user ||
-      (await this.hashService.compare(authDto.password, user.hashedPassword))
+      !(await this.hashService.compare(authDto.password, user.hashedPassword))
     ) {
       throw new UnauthorizedException('Senha ou usuário errados');
     }

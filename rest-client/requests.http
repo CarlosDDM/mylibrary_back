@@ -330,7 +330,7 @@ POST {{URL_API}}/auth/login
 Content-Type: application/json
 
 {
-  "username": "macaco",
+  "username": "carlos.daniel",
   "password": "Macaco@123"
 }
 
