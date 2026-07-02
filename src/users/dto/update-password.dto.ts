@@ -21,4 +21,8 @@ export class UpdatePasswordDto {
   )
   @MaxLength(100, { message: 'A senha não pode ter mais de 100 caracteres' })
   newPassword: string;
+
+  @IsString()
+  @IsNotEmpty({ message: 'A confirmação da nova senha não pode ser vazia' })
+  confirmPassword: string;
 }

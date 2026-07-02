@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -68,7 +69,16 @@ export class UsersService extends BaseService<User> {
     );
 
     if (!canBeChanged) {
-      throw new UnauthorizedException('A senha atual está incorreta');
+      throw new ForbiddenException('A senha atual está incorreta');
+    }
+
+    const passwordsMatch =
+      updatePasswordDto.newPassword === updatePasswordDto.confirmPassword;
+
+    if (!passwordsMatch) {
+      throw new BadRequestException(
+        'A nova senha e a confirmação não conferem',
+      );
     }
 
     const sameAsOld = await this.hashingService.compare(
