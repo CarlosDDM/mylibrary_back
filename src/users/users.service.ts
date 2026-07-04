@@ -22,7 +22,7 @@ export class UsersService extends BaseService<User> {
   ) {
     super(userRepository, 'Users');
   }
-  private async validateUser(dto: CreateUserDto | UpdateUserDto) {
+  private async validateUser(dto: CreateUserDto) {
     if (dto.email) {
       await this.validateNotExists({
         email: dto.email,
@@ -47,10 +47,6 @@ export class UsersService extends BaseService<User> {
 
   async update(id: string, updateUserDto: UpdateUserDto) {
     const user = await this.findOne({ id });
-
-    if (updateUserDto.username && user.username !== updateUserDto.username) {
-      await this.validateNotExists({ username: updateUserDto.username });
-    }
 
     if (updateUserDto.email && user.email !== updateUserDto.email) {
       await this.validateNotExists({ email: updateUserDto.email });
