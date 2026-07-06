@@ -16,7 +16,6 @@ import {
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { PaginationDto } from 'src/common/dto/base.dto';
 import { ResponseUserDto } from './dto/response-user.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
 import { PaginatedUserDto } from './dto/paginated-user.dto';
@@ -25,6 +24,7 @@ import { AuthenticatedGuard } from 'src/auth/guards/authenticated.guard';
 import { RoleGuard } from 'src/auth/guards/role.guard';
 import { Role } from 'src/common/enums/role.enum';
 import { Roles } from 'src/common/decorators/roles.decorator';
+import { DefaultFilterDto } from 'src/common/dto/default-filter.dto';
 
 @Controller('users')
 @SerializeOptions({ type: ResponseUserDto })
@@ -41,8 +41,10 @@ export class UsersController {
   @Get()
   @UseGuards(AuthenticatedGuard)
   @SerializeOptions({ type: PaginatedUserDto })
-  async findAll(@Query() queryParams: PaginationDto) {
-    const [users, total] = await this.usersService.findAll(queryParams);
+  async findAll(@Query() queryParams: DefaultFilterDto) {
+    const [users, total] = await this.usersService.findAll(queryParams, {
+      name: queryParams?.name,
+    });
 
     return paginate([users, total], queryParams);
   }

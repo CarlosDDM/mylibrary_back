@@ -15,13 +15,13 @@ import { IllustratorsService } from './illustrators.service';
 import { CreateIllustratorDto } from './dto/create-illustrator.dto';
 import { UpdateIllustratorDto } from './dto/update-illustrator.dto';
 import { ResponseIllustratorDto } from './dto/response-illustrator.dto';
-import { PaginationDto } from 'src/common/dto/base.dto';
 import { PaginatedIllustratorResponse } from './dto/paginated-illustrator.dto';
 import { paginate } from 'src/common/dto/response-paginated.dto';
 import { AuthenticatedGuard } from 'src/auth/guards/authenticated.guard';
 import { RoleGuard } from 'src/auth/guards/role.guard';
 import { Role } from 'src/common/enums/role.enum';
 import { Roles } from 'src/common/decorators/roles.decorator';
+import { DefaultFilterDto } from 'src/common/dto/default-filter.dto';
 
 @Controller('illustrators')
 @SerializeOptions({ type: ResponseIllustratorDto })
@@ -38,9 +38,13 @@ export class IllustratorsController {
   @Get()
   @UseGuards(AuthenticatedGuard)
   @SerializeOptions({ type: PaginatedIllustratorResponse })
-  async findAll(@Query() paginationDto: PaginationDto) {
-    const [illustrators, total] =
-      await this.illustratorsService.findAll(paginationDto);
+  async findAll(@Query() paginationDto: DefaultFilterDto) {
+    const [illustrators, total] = await this.illustratorsService.findAll(
+      paginationDto,
+      {
+        name: paginationDto?.name,
+      },
+    );
     return paginate([illustrators, total], paginationDto);
   }
 

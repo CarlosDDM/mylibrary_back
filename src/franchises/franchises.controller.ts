@@ -14,7 +14,6 @@ import {
 import { FranchisesService } from './franchises.service';
 import { CreateFranchiseDto } from './dto/create-franchise.dto';
 import { UpdateFranchiseDto } from './dto/update-franchise.dto';
-import { PaginationDto } from 'src/common/dto/base.dto';
 import { PaginatedFranchiseAuthor } from './dto/paginated-franchise.dto';
 import { paginate } from 'src/common/dto/response-paginated.dto';
 import { ResponseAuthorDto } from 'src/authors/dto/response-author.dto';
@@ -22,6 +21,7 @@ import { AuthenticatedGuard } from 'src/auth/guards/authenticated.guard';
 import { RoleGuard } from 'src/auth/guards/role.guard';
 import { Role } from 'src/common/enums/role.enum';
 import { Roles } from 'src/common/decorators/roles.decorator';
+import { DefaultFilterDto } from 'src/common/dto/default-filter.dto';
 
 @Controller('franchises')
 @SerializeOptions({ type: ResponseAuthorDto })
@@ -38,9 +38,11 @@ export class FranchisesController {
   @Get()
   @UseGuards(AuthenticatedGuard)
   @SerializeOptions({ type: PaginatedFranchiseAuthor })
-  async findAll(@Query() paginationDto: PaginationDto) {
-    const [franchises, total] =
-      await this.franchisesService.findAll(paginationDto);
+  async findAll(@Query() paginationDto: DefaultFilterDto) {
+    const [franchises, total] = await this.franchisesService.findAll(
+      paginationDto,
+      { name: paginationDto?.name },
+    );
     return paginate([franchises, total], paginationDto);
   }
 

@@ -22,6 +22,7 @@ import { AuthenticatedGuard } from 'src/auth/guards/authenticated.guard';
 import { Role } from 'src/common/enums/role.enum';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { RoleGuard } from 'src/auth/guards/role.guard';
+import { DefaultFilterDto } from 'src/common/dto/default-filter.dto';
 
 @Controller('authors')
 @SerializeOptions({ type: ResponseAuthorDto })
@@ -38,8 +39,10 @@ export class AuthorsController {
   @Get()
   @UseGuards(AuthenticatedGuard)
   @SerializeOptions({ type: PaginatedAuthorResponse })
-  async findAll(@Query() paginationDto: PaginationDto) {
-    const [authors, total] = await this.authorsService.findAll(paginationDto);
+  async findAll(@Query() paginationDto: DefaultFilterDto) {
+    const [authors, total] = await this.authorsService.findAll(paginationDto, {
+      name: paginationDto?.name,
+    });
     return paginate([authors, total], paginationDto);
   }
 
