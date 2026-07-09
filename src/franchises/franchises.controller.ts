@@ -22,6 +22,7 @@ import { RoleGuard } from 'src/auth/guards/role.guard';
 import { Role } from 'src/common/enums/role.enum';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { DefaultFilterDto } from 'src/common/dto/default-filter.dto';
+import { ILike } from 'typeorm';
 
 @Controller('franchises')
 @SerializeOptions({ type: ResponseAuthorDto })
@@ -39,9 +40,13 @@ export class FranchisesController {
   @UseGuards(AuthenticatedGuard)
   @SerializeOptions({ type: PaginatedFranchiseAuthor })
   async findAll(@Query() paginationDto: DefaultFilterDto) {
+    const where = paginationDto.name
+      ? { name: ILike(`%${paginationDto.name}%`) }
+      : undefined;
+
     const [franchises, total] = await this.franchisesService.findAll(
       paginationDto,
-      { name: paginationDto?.name },
+      where,
     );
     return paginate([franchises, total], paginationDto);
   }

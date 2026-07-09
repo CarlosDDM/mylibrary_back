@@ -12,6 +12,7 @@ import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UpdatePasswordDto } from './dto/update-password.dto';
+import { UpdatePasswordAdminDto } from './dto/update-password-admin.dto';
 
 @Injectable()
 export class UsersService extends BaseService<User> {
@@ -89,6 +90,16 @@ export class UsersService extends BaseService<User> {
     const hashedPassword = await this.hashingService.hash(
       updatePasswordDto.newPassword,
     );
+
+    await this.repository.update({ id }, { hashedPassword });
+  }
+
+  async uptadePasswordAdmin(
+    id: string,
+    { newPassword }: UpdatePasswordAdminDto,
+  ) {
+    await this.validateExists({ id });
+    const hashedPassword = await this.hashingService.hash(newPassword);
 
     await this.repository.update({ id }, { hashedPassword });
   }

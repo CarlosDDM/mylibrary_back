@@ -25,6 +25,8 @@ import { RoleGuard } from 'src/auth/guards/role.guard';
 import { Role } from 'src/common/enums/role.enum';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { DefaultFilterDto } from 'src/common/dto/default-filter.dto';
+import { UpdatePasswordAdminDto } from './dto/update-password-admin.dto';
+import { ILike } from 'typeorm';
 
 @Controller('users')
 @SerializeOptions({ type: ResponseUserDto })
@@ -39,14 +41,17 @@ export class UsersController {
   }
 
   @Get()
-  @UseGuards(AuthenticatedGuard)
+  @UseGuards(AuthenticatedGuard, RoleGuard)
+  @Roles(Role.ADMIN)
   @SerializeOptions({ type: PaginatedUserDto })
-  async findAll(@Query() queryParams: DefaultFilterDto) {
-    const [users, total] = await this.usersService.findAll(queryParams, {
-      name: queryParams?.name,
-    });
+  async findAll(@Query() paginationDto: DefaultFilterDto) {
+    const where = paginationDto.name
+      ? { name: ILike(`%${paginationDto.name}%`) }
+      : undefined;
 
-    return paginate([users, total], queryParams);
+    const [users, total] = await this.usersService.findAll(paginationDto, where);
+
+    return paginate([users, total], paginationDto);
   }
 
   @Get(':id')
@@ -74,10 +79,21 @@ export class UsersController {
   @Patch(':id/password')
   @UseGuards(AuthenticatedGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
-  async updatePassword(
+  updatePassword(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Body() updatePasswordDto: UpdatePasswordDto,
   ) {
-    await this.usersService.updatePassword(id, updatePasswordDto);
+    return this.usersService.updatePassword(id, updatePasswordDto);
+  }
+
+  @Patch(':id/password/admin')
+  @UseGuards(AuthenticatedGuard, RoleGuard)
+  @Roles(Role.ADMIN)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  updatePasswordAdmin(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Body() updatePassAdminDto: UpdatePasswordAdminDto,
+  ) {
+    return this.usersService.uptadePasswordAdmin(id, updatePassAdminDto);
   }
 }

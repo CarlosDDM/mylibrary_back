@@ -22,6 +22,7 @@ import { RoleGuard } from 'src/auth/guards/role.guard';
 import { Role } from 'src/common/enums/role.enum';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { DefaultFilterDto } from 'src/common/dto/default-filter.dto';
+import { ILike } from 'typeorm';
 
 @Controller('illustrators')
 @SerializeOptions({ type: ResponseIllustratorDto })
@@ -39,11 +40,13 @@ export class IllustratorsController {
   @UseGuards(AuthenticatedGuard)
   @SerializeOptions({ type: PaginatedIllustratorResponse })
   async findAll(@Query() paginationDto: DefaultFilterDto) {
+    const where = paginationDto.name
+      ? { name: ILike(`%${paginationDto.name}%`) }
+      : undefined;
+
     const [illustrators, total] = await this.illustratorsService.findAll(
       paginationDto,
-      {
-        name: paginationDto?.name,
-      },
+      where,
     );
     return paginate([illustrators, total], paginationDto);
   }

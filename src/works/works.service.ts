@@ -280,18 +280,7 @@ export class WorksService extends BaseService<Work> {
     }
 
     return qb
-      .addSelect(
-        `CASE
-        WHEN work.is_special_edition = true THEN 0
-        WHEN work.volume IS NOT NULL OR work.volume_name IS NOT NULL THEN 1
-        ELSE 2
-      END`,
-        'sort_order',
-      )
-      .orderBy('sort_order', 'ASC')
-      .addOrderBy('work.volume', 'ASC', 'NULLS LAST')
-      .addOrderBy('work.volumeName', 'ASC', 'NULLS LAST')
-      .addOrderBy('work.updatedAt', 'DESC')
+      .orderBy('work.updatedAt', 'DESC')
       .take(take)
       .skip(skip)
       .getManyAndCount();
