@@ -29,6 +29,9 @@ export class Serie {
   @Column({ name: 'serie_volumes', type: 'int', default: null, nullable: true })
   serieVolumes: number | null;
 
+  @Column({ name: 'cover_url', type: 'varchar', nullable: true })
+  coverUrl: string | null;
+
   @OneToMany(() => Work, (work) => work.serie)
   works: Work[];
 

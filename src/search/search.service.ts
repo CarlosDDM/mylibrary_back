@@ -13,7 +13,11 @@ export class SearchService {
   async findAll({ name, take, skip }: SearchQueryDto) {
     const [[worksData, worksTotal], [seriesData, seriesTotal]] =
       await Promise.all([
-        this.workService.search({ take, skip }, { name: ILike(`%${name}%`) }),
+        this.workService.search(
+          { take, skip },
+          { name: ILike(`%${name}%`) },
+          { covers: true },
+        ),
         this.serieService.search({ take, skip }, { name: ILike(`%${name}%`) }),
       ]);
 

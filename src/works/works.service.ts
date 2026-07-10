@@ -1,4 +1,8 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateWorkDto } from './dto/create-work.dto';
 import { UpdateWorkDto } from './dto/update-work.dto';
 import { BaseService } from 'src/common/base.service';
@@ -20,13 +24,18 @@ import { AuthorsService } from 'src/authors/authors.service';
 import { IllustratorsService } from 'src/illustrators/illustrators.service';
 import { WorkAuthor } from './entities/work-author.entity';
 import { WorkIllustrator } from './entities/work-illustrator.entity';
+import { Cover } from './entities/cover.entity';
 import { FilterWorkDto } from './dto/filter-work.dto';
+import { FileService } from 'src/file/file.service';
+import { generateImageFilename } from 'src/common/utils/generate-image-filename.utils';
 
 @Injectable()
 export class WorksService extends BaseService<Work> {
   constructor(
     @InjectRepository(Work)
     private readonly workRepository: Repository<Work>,
+    @InjectRepository(Cover)
+    private readonly coverRepository: Repository<Cover>,
     private readonly serieService: SeriesService,
     private readonly mediaService: MediasService,
     private readonly languageService: LanguagesService,
@@ -34,6 +43,7 @@ export class WorksService extends BaseService<Work> {
     private readonly illustratorService: IllustratorsService,
     private readonly dataSource: DataSource,
     private readonly cacheService: CacheService,
+    private readonly fileService: FileService,
   ) {
     super(workRepository, 'Work', {
       covers: true,
@@ -249,7 +259,62 @@ export class WorksService extends BaseService<Work> {
 
     await this.invalidate(work.id, [work.serieId]);
 
+    await Promise.all(
+      (work.covers ?? []).map((cover) => this.removeCoverObject(cover.url)),
+    );
+
     return work;
+  }
+
+  async addCover(
+    workId: string,
+    file: Express.Multer.File,
+    isSpecialEdition = false,
+  ) {
+    const work = await this.findOne({ id: workId });
+
+    const key = `works/${generateImageFilename(file.originalname)}`;
+    const { url } = await this.fileService.uploadImage(file, key);
+
+    const raw = await this.coverRepository
+      .createQueryBuilder('cover')
+      .select('MAX(cover.order)', 'max')
+      .where('cover.workId = :workId', { workId })
+      .getRawOne<{ max: number | null }>();
+    const order = Number(raw?.max ?? 0) + 1;
+
+    const cover = this.coverRepository.create({
+      workId,
+      url,
+      isSpecialEdition,
+      order,
+    });
+    await this.coverRepository.save(cover);
+
+    await this.invalidate(workId, [work.serieId]);
+
+    return this.findOne({ id: workId });
+  }
+
+  async removeCover(workId: string, coverId: string) {
+    const cover = await this.coverRepository.findOne({
+      where: { id: coverId, workId },
+    });
+
+    if (!cover) throw new NotFoundException('Capa não encontrada');
+
+    await this.coverRepository.delete({ id: coverId });
+    await this.removeCoverObject(cover.url);
+
+    const work = await this.findOne({ id: workId });
+    await this.invalidate(workId, [work.serieId]);
+
+    return work;
+  }
+
+  private async removeCoverObject(url: string) {
+    const key = this.fileService.keyFromUrl(url);
+    if (key) await this.fileService.deleteImage(key);
   }
 
   findAll({

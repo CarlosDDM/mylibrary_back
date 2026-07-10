@@ -15,6 +15,9 @@ export class ResponseSeriesDto {
   serieVolumes: number | null;
 
   @Expose()
+  coverUrl: string | null;
+
+  @Expose()
   @Type(() => OptionsType)
   status: OptionsType;
 

@@ -9,6 +9,7 @@ import { ResponseAuthorDto } from 'src/authors/dto/response-author.dto';
 import { ResponseIllustratorDto } from 'src/illustrators/dto/response-illustrator.dto';
 import { OptionsType } from 'src/options/dto/response-option.dto';
 import { ResponseSeriesDto } from 'src/series/dto/response-series.dto';
+import { ResponseCoverDto } from './response-cover.dto';
 
 type WorkRaw = {
   workAuthors?: { author: { id: string; name: string } }[];
@@ -57,6 +58,10 @@ export class ResponseWorkDto {
     { toClassOnly: true },
   )
   illustrators: ResponseIllustratorDto[];
+
+  @Expose()
+  @Type(() => ResponseCoverDto)
+  covers: ResponseCoverDto[];
 
   @Expose()
   @Type(() => ResponseSeriesDto)

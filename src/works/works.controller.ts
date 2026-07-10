@@ -10,10 +10,15 @@ import {
   Query,
   SerializeOptions,
   UseGuards,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { WorksService } from './works.service';
 import { CreateWorkDto } from './dto/create-work.dto';
 import { UpdateWorkDto } from './dto/update-work.dto';
+import { AddCoverDto } from './dto/add-cover.dto';
+import { ValidateImagePipe } from 'src/file/pipe/validate-image.pipe';
 import { ResponseWorkDto } from './dto/response-work.dto';
 import { FilterWorkDto } from './dto/filter-work.dto';
 import { paginate } from 'src/common/dto/response-paginated.dto';
@@ -68,5 +73,29 @@ export class WorksController {
   async remove(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
     const work = await this.worksService.delete({ id });
     return work;
+  }
+
+  @Post(':id/covers')
+  @UseGuards(AuthenticatedGuard, RoleGuard)
+  @Roles(Role.ADMIN)
+  @UseInterceptors(
+    FileInterceptor('file', { limits: { fileSize: 5 * 1024 * 1024 } }),
+  )
+  addCover(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @UploadedFile(ValidateImagePipe) file: Express.Multer.File,
+    @Body() addCoverDto: AddCoverDto,
+  ) {
+    return this.worksService.addCover(id, file, addCoverDto.isSpecialEdition);
+  }
+
+  @Delete(':id/covers/:coverId')
+  @UseGuards(AuthenticatedGuard, RoleGuard)
+  @Roles(Role.ADMIN)
+  removeCover(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Param('coverId', new ParseUUIDPipe({ version: '4' })) coverId: string,
+  ) {
+    return this.worksService.removeCover(id, coverId);
   }
 }

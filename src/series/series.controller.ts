@@ -10,8 +10,13 @@ import {
   Query,
   SerializeOptions,
   UseGuards,
+  Put,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { SeriesService } from './series.service';
+import { ValidateImagePipe } from 'src/file/pipe/validate-image.pipe';
 import { CreateSeriesDto } from './dto/create-series.dto';
 import { UpdateSeriesDto } from './dto/update-series.dto';
 import { paginate } from 'src/common/dto/response-paginated.dto';
@@ -64,5 +69,25 @@ export class SeriesController {
   @Roles(Role.ADMIN)
   remove(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
     return this.seriesService.delete({ id });
+  }
+
+  @Put(':id/cover')
+  @UseGuards(AuthenticatedGuard, RoleGuard)
+  @Roles(Role.ADMIN)
+  @UseInterceptors(
+    FileInterceptor('file', { limits: { fileSize: 5 * 1024 * 1024 } }),
+  )
+  setCover(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @UploadedFile(ValidateImagePipe) file: Express.Multer.File,
+  ) {
+    return this.seriesService.setCover(id, file);
+  }
+
+  @Delete(':id/cover')
+  @UseGuards(AuthenticatedGuard, RoleGuard)
+  @Roles(Role.ADMIN)
+  removeCover(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
+    return this.seriesService.removeCover(id);
   }
 }

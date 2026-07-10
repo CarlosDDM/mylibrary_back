@@ -16,6 +16,8 @@ import { SearchModule } from './search/search.module';
 import { AuthModule } from './auth/auth.module';
 import { CacheModule } from './cache/cache.module';
 import { RedisModule } from './redis/redis.module';
+import { FileService } from './file/file.service';
+import { FileModule } from './file/file.module';
 
 @Module({
   imports: [
@@ -51,7 +53,8 @@ import { RedisModule } from './redis/redis.module';
     AuthModule,
     CacheModule,
     RedisModule,
+    FileModule,
   ],
-  providers: [],
+  providers: [FileService],
 })
 export class AppModule {}

@@ -10,6 +10,8 @@ import { BaseService } from 'src/common/base.service';
 import { FilterSerieDto } from './dto/filter-serie-dto';
 import { CacheService } from 'src/cache/cache.service';
 import { serieCacheKey } from 'src/cache/cache.keys';
+import { FileService } from 'src/file/file.service';
+import { generateImageFilename } from 'src/common/utils/generate-image-filename.utils';
 
 @Injectable()
 export class SeriesService extends BaseService<Serie> {
@@ -19,11 +21,13 @@ export class SeriesService extends BaseService<Serie> {
     private readonly statusService: StatusService,
     private readonly franchiseService: FranchisesService,
     private readonly cacheService: CacheService,
+    private readonly fileService: FileService,
   ) {
     super(serieRepository, 'Serie', {
       status: true,
       franchise: true,
       works: {
+        covers: true,
         language: true,
         media: true,
         workAuthors: { author: true },
@@ -81,7 +85,45 @@ export class SeriesService extends BaseService<Serie> {
 
     await this.cacheService.del(serieCacheKey(serie.id));
 
+    if (serie.coverUrl) {
+      await this.removeCoverObject(serie.coverUrl);
+    }
+
     return serie;
+  }
+
+  async setCover(id: string, file: Express.Multer.File) {
+    const serie = await this.findOne({ id });
+    const previousUrl = serie.coverUrl;
+
+    const key = `series/${generateImageFilename(file.originalname)}`;
+    const { url } = await this.fileService.uploadImage(file, key);
+
+    await this.repository.update({ id }, { coverUrl: url });
+    await this.cacheService.del(serieCacheKey(id));
+
+    if (previousUrl) {
+      await this.removeCoverObject(previousUrl);
+    }
+
+    return this.findOne({ id });
+  }
+
+  async removeCover(id: string) {
+    const serie = await this.findOne({ id });
+
+    if (serie.coverUrl) {
+      await this.repository.update({ id }, { coverUrl: null });
+      await this.cacheService.del(serieCacheKey(id));
+      await this.removeCoverObject(serie.coverUrl);
+    }
+
+    return this.findOne({ id });
+  }
+
+  private async removeCoverObject(url: string) {
+    const key = this.fileService.keyFromUrl(url);
+    if (key) await this.fileService.deleteImage(key);
   }
 
   async findAll({

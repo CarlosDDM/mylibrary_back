@@ -5,22 +5,25 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Work } from './entities/work.entity';
 import { WorkIllustrator } from './entities/work-illustrator.entity';
 import { WorkAuthor } from './entities/work-author.entity';
+import { Cover } from './entities/cover.entity';
 import { SeriesModule } from 'src/series/series.module';
 import { MediasModule } from 'src/medias/medias.module';
 import { LanguagesModule } from 'src/languages/languages.module';
 import { AuthorsModule } from 'src/authors/authors.module';
 import { IllustratorsModule } from 'src/illustrators/illustrators.module';
 import { CacheModule } from 'src/cache/cache.module';
+import { FileModule } from 'src/file/file.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Work, WorkAuthor, WorkIllustrator]),
+    TypeOrmModule.forFeature([Work, WorkAuthor, WorkIllustrator, Cover]),
     SeriesModule,
     MediasModule,
     LanguagesModule,
     AuthorsModule,
     IllustratorsModule,
     CacheModule,
+    FileModule,
   ],
   controllers: [WorksController],
   providers: [WorksService],

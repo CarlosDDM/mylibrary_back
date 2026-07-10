@@ -1,11 +1,9 @@
 import {
   Column,
-  CreateDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
-  UpdateDateColumn,
 } from 'typeorm';
 import { Work } from './work.entity';
 
@@ -23,11 +21,8 @@ export class Cover {
   @Column({ name: 'cover_order' })
   order: number;
 
-  @CreateDateColumn({ name: 'created_at' })
-  createdAt: Date;
-
-  @UpdateDateColumn({ name: 'updated_at' })
-  updatedAt: Date;
+  @Column({ name: 'work_id' })
+  workId: string;
 
   @ManyToOne(() => Work, (work) => work.covers, {
     onDelete: 'CASCADE',

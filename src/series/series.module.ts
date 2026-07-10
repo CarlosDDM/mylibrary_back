@@ -6,6 +6,7 @@ import { Serie } from './entities/serie.entity';
 import { StatusModule } from 'src/status/status.module';
 import { FranchisesModule } from 'src/franchises/franchises.module';
 import { CacheModule } from 'src/cache/cache.module';
+import { FileModule } from 'src/file/file.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { CacheModule } from 'src/cache/cache.module';
     StatusModule,
     FranchisesModule,
     CacheModule,
+    FileModule,
   ],
   controllers: [SeriesController],
   providers: [SeriesService],

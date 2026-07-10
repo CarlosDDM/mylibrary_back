@@ -63,15 +63,22 @@ export abstract class BaseService<T extends ObjectLiteral> {
   protected findAllBase(
     { take = 20, skip = 0 }: PaginationDto,
     where?: FindOptionsWhere<T>,
+    relations?: FindOptionsRelations<T>,
   ) {
     return this.repository.findAndCount({
       where,
+      relations,
+      relationLoadStrategy: 'query',
       take,
       skip,
     });
   }
 
-  search({ take = 10, skip = 0 }: PaginationDto, where: FindOptionsWhere<T>) {
-    return this.findAllBase({ take, skip }, where);
+  search(
+    { take = 10, skip = 0 }: PaginationDto,
+    where: FindOptionsWhere<T>,
+    relations?: FindOptionsRelations<T>,
+  ) {
+    return this.findAllBase({ take, skip }, where, relations);
   }
 }

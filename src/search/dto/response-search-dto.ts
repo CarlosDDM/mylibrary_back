@@ -1,5 +1,6 @@
 import { Type } from '@nestjs/common';
 import { Expose, Type as TransformationType } from 'class-transformer';
+import { ResponseCoverDto } from 'src/works/dto/response-cover.dto';
 
 interface ISearchDto<T> {
   data: T[];
@@ -23,11 +24,15 @@ class WorkSearchDto {
   @Expose() name: string;
   @Expose() subtitle: string;
   @Expose() volume: number;
+  @Expose()
+  @TransformationType(() => ResponseCoverDto)
+  covers: ResponseCoverDto[];
 }
 
 class SerieSearchDto {
   @Expose() id: string;
   @Expose() name: string;
+  @Expose() coverUrl: string | null;
 }
 
 class WorksPaginated extends responseSearch(WorkSearchDto) {}
