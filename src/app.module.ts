@@ -14,6 +14,8 @@ import { LanguagesModule } from './languages/languages.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { SearchModule } from './search/search.module';
 import { AuthModule } from './auth/auth.module';
+import { CacheModule } from './cache/cache.module';
+import { RedisModule } from './redis/redis.module';
 
 @Module({
   imports: [
@@ -47,6 +49,8 @@ import { AuthModule } from './auth/auth.module';
     DashboardModule,
     SearchModule,
     AuthModule,
+    CacheModule,
+    RedisModule,
   ],
   providers: [],
 })

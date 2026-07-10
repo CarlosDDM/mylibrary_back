@@ -3,11 +3,13 @@ import { CreateSeriesDto } from './dto/create-series.dto';
 import { UpdateSeriesDto } from './dto/update-series.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Serie } from './entities/serie.entity';
-import { Repository } from 'typeorm';
+import { FindOptionsWhere, Repository } from 'typeorm';
 import { StatusService } from 'src/status/status.service';
 import { FranchisesService } from 'src/franchises/franchises.service';
 import { BaseService } from 'src/common/base.service';
 import { FilterSerieDto } from './dto/filter-serie-dto';
+import { CacheService } from 'src/cache/cache.service';
+import { serieCacheKey } from 'src/cache/cache.keys';
 
 @Injectable()
 export class SeriesService extends BaseService<Serie> {
@@ -16,6 +18,7 @@ export class SeriesService extends BaseService<Serie> {
     private readonly serieRepository: Repository<Serie>,
     private readonly statusService: StatusService,
     private readonly franchiseService: FranchisesService,
+    private readonly cacheService: CacheService,
   ) {
     super(serieRepository, 'Serie', {
       status: true,
@@ -27,6 +30,12 @@ export class SeriesService extends BaseService<Serie> {
         workIllustrators: { illustrator: true },
       },
     });
+  }
+
+  findOneById(id: string) {
+    return this.cacheService.wrap(serieCacheKey(id), () =>
+      this.findOne({ id }),
+    );
   }
 
   private async validateSerieData(
@@ -56,20 +65,23 @@ export class SeriesService extends BaseService<Serie> {
 
   async update(id: string, updateSeriesDto: UpdateSeriesDto) {
     const serie = await this.findOne({ id });
+    const nameChanged = serie.name !== updateSeriesDto.name;
 
-    if (serie && serie.name !== updateSeriesDto.name) {
-      await this.validateSerieData(updateSeriesDto);
-
-      await this.repository.update({ id }, updateSeriesDto);
-
-      return this.findOne({ id });
-    }
-
-    await this.validateSerieData(updateSeriesDto, false);
+    await this.validateSerieData(updateSeriesDto, nameChanged);
 
     await this.repository.update({ id }, updateSeriesDto);
 
+    await this.cacheService.del(serieCacheKey(id));
+
     return this.findOne({ id });
+  }
+
+  async delete(where: FindOptionsWhere<Serie>) {
+    const serie = await super.delete(where);
+
+    await this.cacheService.del(serieCacheKey(serie.id));
+
+    return serie;
   }
 
   async findAll({

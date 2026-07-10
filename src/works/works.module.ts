@@ -10,6 +10,7 @@ import { MediasModule } from 'src/medias/medias.module';
 import { LanguagesModule } from 'src/languages/languages.module';
 import { AuthorsModule } from 'src/authors/authors.module';
 import { IllustratorsModule } from 'src/illustrators/illustrators.module';
+import { CacheModule } from 'src/cache/cache.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { IllustratorsModule } from 'src/illustrators/illustrators.module';
     LanguagesModule,
     AuthorsModule,
     IllustratorsModule,
+    CacheModule,
   ],
   controllers: [WorksController],
   providers: [WorksService],

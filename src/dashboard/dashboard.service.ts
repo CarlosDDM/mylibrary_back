@@ -1,14 +1,26 @@
 import { Injectable } from '@nestjs/common';
+import { CacheService } from 'src/cache/cache.service';
 import { Franchise } from 'src/franchises/entities/franchise.entity';
 import { Serie } from 'src/series/entities/serie.entity';
 import { Work } from 'src/works/entities/work.entity';
 import { DataSource } from 'typeorm';
 
+const STATISTICS_CACHE_KEY = 'dashboard:statistics';
+
 @Injectable()
 export class DashboardService {
-  constructor(private readonly dataSource: DataSource) {}
+  constructor(
+    private readonly dataSource: DataSource,
+    private readonly cacheService: CacheService,
+  ) {}
 
   findAll() {
+    return this.cacheService.wrap(STATISTICS_CACHE_KEY, () =>
+      this.getStatistics(),
+    );
+  }
+
+  private getStatistics() {
     return this.dataSource.transaction(async (manager) => {
       const totalWorks = await manager.count(Work);
       const result = await manager

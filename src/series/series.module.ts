@@ -5,9 +5,15 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Serie } from './entities/serie.entity';
 import { StatusModule } from 'src/status/status.module';
 import { FranchisesModule } from 'src/franchises/franchises.module';
+import { CacheModule } from 'src/cache/cache.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Serie]), StatusModule, FranchisesModule],
+  imports: [
+    TypeOrmModule.forFeature([Serie]),
+    StatusModule,
+    FranchisesModule,
+    CacheModule,
+  ],
   controllers: [SeriesController],
   providers: [SeriesService],
   exports: [SeriesService],

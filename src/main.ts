@@ -1,24 +1,22 @@
 import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
+import {
+  ClassSerializerInterceptor,
+  Logger,
+  ValidationPipe,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import session from 'express-session';
-import { createClient } from 'redis';
 import { RedisStore } from 'connect-redis';
 import passport from 'passport';
+import type { RedisClientType } from 'redis';
+import { REDIS_SESSION_CLIENT } from './redis/redis.provider';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const config = app.get(ConfigService);
 
-  const redisClient = createClient({
-    socket: {
-      host: config.get<string>('REDIS_HOST'),
-      port: config.get<number>('REDIS_PORT'),
-    },
-    password: config.get<string>('REDIS_PASSWORD'),
-  });
-  redisClient.connect().catch(console.error);
+  const redisClient = app.get<RedisClientType>(REDIS_SESSION_CLIENT);
 
   const redisStore = new RedisStore({
     client: redisClient,
@@ -63,6 +61,12 @@ async function bootstrap() {
   app.use(passport.initialize());
   app.use(passport.session());
 
+  app.enableShutdownHooks();
+
   await app.listen(process.env.PORT ?? 3000);
 }
-void bootstrap();
+
+bootstrap().catch((err) => {
+  new Logger('Bootstrap').error('Falha ao iniciar a aplicação', err);
+  process.exit(1);
+});

@@ -46,7 +46,7 @@ export class SeriesController {
   @Get(':id')
   @UseGuards(AuthenticatedGuard)
   findOne(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
-    return this.seriesService.findOne({ id });
+    return this.seriesService.findOneById(id);
   }
 
   @Patch(':id')

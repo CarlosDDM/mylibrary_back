@@ -4,7 +4,15 @@ import { UpdateWorkDto } from './dto/update-work.dto';
 import { BaseService } from 'src/common/base.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Work } from './entities/work.entity';
-import { DataSource, EntityManager, In, Repository } from 'typeorm';
+import {
+  DataSource,
+  EntityManager,
+  FindOptionsWhere,
+  In,
+  Repository,
+} from 'typeorm';
+import { CacheService } from 'src/cache/cache.service';
+import { serieCacheKey, workCacheKey } from 'src/cache/cache.keys';
 import { SeriesService } from 'src/series/series.service';
 import { MediasService } from 'src/medias/medias.service';
 import { LanguagesService } from 'src/languages/languages.service';
@@ -25,6 +33,7 @@ export class WorksService extends BaseService<Work> {
     private readonly authorService: AuthorsService,
     private readonly illustratorService: IllustratorsService,
     private readonly dataSource: DataSource,
+    private readonly cacheService: CacheService,
   ) {
     super(workRepository, 'Work', {
       covers: true,
@@ -38,6 +47,22 @@ export class WorksService extends BaseService<Work> {
       },
       serie: true,
     });
+  }
+
+  findOneById(id: string) {
+    return this.cacheService.wrap(workCacheKey(id), () => this.findOne({ id }));
+  }
+
+  private async invalidate(
+    workId: string,
+    serieIds: Array<string | null | undefined>,
+  ) {
+    const keys = new Set([workCacheKey(workId)]);
+    for (const serieId of serieIds) {
+      if (serieId) keys.add(serieCacheKey(serieId));
+    }
+
+    await Promise.all([...keys].map((key) => this.cacheService.del(key)));
   }
 
   private async validateWorkData(
@@ -200,7 +225,7 @@ export class WorksService extends BaseService<Work> {
     await this.validateWorkData(updateWorkDto, false);
     const work = await this.findOne({ id });
 
-    return this.dataSource.transaction(async (manager) => {
+    const updated = await this.dataSource.transaction(async (manager) => {
       const { authors, illustrators, ...workData } = updateWorkDto;
 
       await this.validateSeriesVolume(manager, id, work, workData);
@@ -213,6 +238,18 @@ export class WorksService extends BaseService<Work> {
         relations: this.relations,
       });
     });
+
+    await this.invalidate(id, [work.serieId, updateWorkDto.serieId]);
+
+    return updated;
+  }
+
+  async delete(where: FindOptionsWhere<Work>) {
+    const work = await super.delete(where);
+
+    await this.invalidate(work.id, [work.serieId]);
+
+    return work;
   }
 
   findAll({

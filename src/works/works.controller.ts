@@ -47,7 +47,7 @@ export class WorksController {
   @Get(':id')
   @UseGuards(AuthenticatedGuard)
   async findOne(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
-    const work = await this.worksService.findOne({ id });
+    const work = await this.worksService.findOneById(id);
     return work;
   }
 
