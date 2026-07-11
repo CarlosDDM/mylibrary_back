@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import {
   ClassSerializerInterceptor,
   Logger,
+  LogLevel,
   ValidationPipe,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -15,8 +16,16 @@ import { REDIS_SESSION_CLIENT } from './redis/redis.provider';
 import { whitelist } from './common/utils/whitelist.utils';
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    bufferLogs: true,
+  });
   const config = app.get(ConfigService);
+
+  const isProd = config.get<string>('NODE_ENV') === 'production';
+  const logLevels: LogLevel[] = isProd
+    ? ['error', 'warn', 'log']
+    : ['error', 'warn', 'log', 'debug', 'verbose'];
+  app.useLogger(logLevels);
 
   const trustProxy = config.get<string>('TRUST_PROXY');
   if (trustProxy) {

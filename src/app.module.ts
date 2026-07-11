@@ -18,6 +18,10 @@ import { CacheModule } from './cache/cache.module';
 import { RedisModule } from './redis/redis.module';
 import { FileService } from './file/file.service';
 import { FileModule } from './file/file.module';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
+import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 
 @Module({
   imports: [
@@ -38,6 +42,13 @@ import { FileModule } from './file/file.module';
         synchronize: configService.get<string>('NODE_ENV') !== 'production',
       }),
     }),
+    ThrottlerModule.forRoot({
+      throttlers: [
+        { name: 'short', ttl: 1000, limit: 20 },
+        { name: 'medium', ttl: 10000, limit: 100 },
+        { name: 'long', ttl: 60000, limit: 300 },
+      ],
+    }),
     WorksModule,
     SeriesModule,
     FranchisesModule,
@@ -55,6 +66,11 @@ import { FileModule } from './file/file.module';
     RedisModule,
     FileModule,
   ],
-  providers: [FileService],
+  providers: [
+    FileService,
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
+    { provide: APP_FILTER, useClass: AllExceptionsFilter },
+    { provide: APP_INTERCEPTOR, useClass: LoggingInterceptor },
+  ],
 })
 export class AppModule {}
