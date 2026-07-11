@@ -6,15 +6,31 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 import session from 'express-session';
 import { RedisStore } from 'connect-redis';
 import passport from 'passport';
 import type { RedisClientType } from 'redis';
 import { REDIS_SESSION_CLIENT } from './redis/redis.provider';
+import { whitelist } from './common/utils/whitelist.utils';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const config = app.get(ConfigService);
+
+  const trustProxy = config.get<string>('TRUST_PROXY');
+  if (trustProxy) {
+    app.set('trust proxy', Number(trustProxy) || trustProxy);
+  }
+
+  const cookieSecureEnv = config.get<string>('COOKIE_SECURE');
+  const cookieSecure =
+    cookieSecureEnv !== undefined
+      ? cookieSecureEnv === 'true'
+      : config.get<string>('NODE_ENV') === 'production';
+
+  const cookieSameSite = (config.get<string>('COOKIE_SAMESITE') ?? 'lax') as
+    'lax' | 'strict' | 'none';
 
   const redisClient = app.get<RedisClientType>(REDIS_SESSION_CLIENT);
 
@@ -24,7 +40,7 @@ async function bootstrap() {
   });
 
   app.enableCors({
-    origin: 'http://localhost:4200',
+    origin: whitelist(),
     credentials: true,
   });
 
@@ -51,9 +67,8 @@ async function bootstrap() {
       name: config.get<string>('COOKIE_NAME')!,
       cookie: {
         httpOnly: true,
-        // secure: false,
-        secure: config.get<string>('NODE_ENV') === 'production',
-        sameSite: 'lax',
+        secure: cookieSecure,
+        sameSite: cookieSameSite,
         maxAge: 1000 * 60 * 60 * 24, // 1 day
       },
     }),

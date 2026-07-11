@@ -36,7 +36,6 @@ import { FileModule } from './file/file.module';
         entities: [`${__dirname}/**/*.entity{.ts,.js}`],
         migrations: [`${__dirname}/migrations/*{.ts,.js}`],
         synchronize: configService.get<string>('NODE_ENV') !== 'production',
-        migrationsRun: configService.get<string>('NODE_ENV') === 'production',
       }),
     }),
     WorksModule,

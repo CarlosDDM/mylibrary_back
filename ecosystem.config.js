@@ -4,7 +4,7 @@ module.exports = {
       name: 'mylibrary-back',
       script: 'dist/main.js',
       exec_mode: 'cluster',
-      instances: 'max',
+      instances: 1,
       env: {
         NODE_ENV: 'production',
       },
