@@ -14,12 +14,15 @@ import passport from 'passport';
 import type { RedisClientType } from 'redis';
 import { REDIS_SESSION_CLIENT } from './redis/redis.provider';
 import { whitelist } from './common/utils/whitelist.utils';
+import helmet from 'helmet';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     bufferLogs: true,
   });
   const config = app.get(ConfigService);
+
+  app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 
   const isProd = config.get<string>('NODE_ENV') === 'production';
   const logLevels: LogLevel[] = isProd
