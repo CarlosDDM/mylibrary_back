@@ -9,7 +9,7 @@ export class AuthenticatedGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
     const request = context.switchToHttp().getRequest<Request>();
 
-    if (request.isUnauthenticated()) {
+    if (!request.isAuthenticated()) {
       throw new UnauthorizedException('Você precisa estar autenticado');
     }
     return request.isAuthenticated();

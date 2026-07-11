@@ -49,7 +49,10 @@ export class UsersController {
       ? { name: ILike(`%${paginationDto.name}%`) }
       : undefined;
 
-    const [users, total] = await this.usersService.findAll(paginationDto, where);
+    const [users, total] = await this.usersService.findAll(
+      paginationDto,
+      where,
+    );
 
     return paginate([users, total], paginationDto);
   }

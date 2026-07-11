@@ -51,6 +51,7 @@ async function bootstrap() {
       name: config.get<string>('COOKIE_NAME')!,
       cookie: {
         httpOnly: true,
+        // secure: false,
         secure: config.get<string>('NODE_ENV') === 'production',
         sameSite: 'lax',
         maxAge: 1000 * 60 * 60 * 24, // 1 day
