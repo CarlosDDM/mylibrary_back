@@ -2,28 +2,41 @@ FROM node:22-alpine AS builder
 
 WORKDIR /app
 
-COPY package*.json ./
+RUN apk add --no-cache python3 make g++
 
-RUN npm install
+COPY package*.json ./
+RUN npm ci
 
 COPY . .
-
 RUN npm run build
 
-FROM node:22-alpine AS runner
 
-ARG PORT
-
-ENV PORT=${PORT}
+FROM node:22-alpine AS prod-deps
 
 WORKDIR /app
 
-COPY --from=builder /app/dist ./dist
+RUN apk add --no-cache python3 make g++
 
-COPY --from=builder /app/node_modules ./node_modules
+COPY package*.json ./
+RUN npm ci --omit=dev
 
-COPY --from=builder /app/package*.json ./
+FROM node:22-alpine AS runner
 
-CMD ["npm", "run", "start:dev"]
+ARG PORT=3000
+ENV PORT=${PORT}
+ENV NODE_ENV=production
+
+WORKDIR /app
+
+RUN npm install -g pm2
+
+COPY package*.json ./
+COPY --from=prod-deps /app/node_modules ./node_modules
+COPY --from=builder   /app/dist         ./dist
+COPY ecosystem.config.js entrypoint.sh ./
+
+RUN chmod +x ./entrypoint.sh
 
 EXPOSE ${PORT}
+
+ENTRYPOINT ["./entrypoint.sh"]

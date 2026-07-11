@@ -1,1 +1,12 @@
+node_modules
+dist
+build
+coverage
+.git
 .docker
+.env
+.env.*
+!.env.example
+*.log
+.vscode
+.idea

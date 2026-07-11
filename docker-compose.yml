@@ -6,11 +6,16 @@ services:
     ports:
       - "${REDIS_PORT}:6379"
     volumes:
-      - ./.docker/redis:/data
+      - /home/carlos/data/redis:/data
     networks:
       - app-nest
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
   postgres:
-    image: postgres:latest
+    image: postgres:17-alpine
     container_name: postgres
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
@@ -19,7 +24,12 @@ services:
     ports:
       - "${DB_PORT}:5432"
     volumes:
-      - ./.docker/postgres:/var/lib/postgresql
+      - /home/carlos/data/postgres:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     networks:
       - app-nest
   app:
@@ -32,11 +42,11 @@ services:
       - .env
     ports:
       - ${PORT}:${PORT}
-    volumes:
-      - ./:/app
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     networks:
       - app-nest
 networks:
