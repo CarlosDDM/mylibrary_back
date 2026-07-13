@@ -137,15 +137,7 @@ export class SeriesService extends BaseService<Serie> {
       .createQueryBuilder('serie')
       .leftJoinAndSelect('serie.status', 'status')
       .leftJoinAndSelect('serie.franchise', 'franchise')
-      .leftJoinAndSelect('serie.works', 'works')
-      .leftJoinAndSelect('works.language', 'language')
-      .leftJoinAndSelect('works.media', 'media')
-      .leftJoinAndSelect('works.workAuthors', 'workAuthors')
-      .leftJoinAndSelect('workAuthors.author', 'author')
-      .leftJoinAndSelect('works.workIllustrators', 'workIllustrators')
-      .leftJoinAndSelect('workIllustrators.illustrator', 'illustrator')
       .orderBy('serie.updatedAt', 'DESC')
-      .addOrderBy('works.updatedAt', 'DESC')
       .take(take)
       .skip(skip);
 
