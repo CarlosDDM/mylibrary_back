@@ -32,7 +32,9 @@ async function bootstrap() {
 
   const trustProxy = config.get<string>('TRUST_PROXY');
   if (trustProxy) {
-    app.set('trust proxy', Number(trustProxy) || trustProxy);
+    const parsed =
+      trustProxy === 'true' ? true : Number(trustProxy) || trustProxy;
+    app.set('trust proxy', parsed);
   }
 
   const cookieSecureEnv = config.get<string>('COOKIE_SECURE');
