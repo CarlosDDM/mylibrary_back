@@ -35,6 +35,8 @@ export class Serie {
   @OneToMany(() => Work, (work) => work.serie)
   works: Work[];
 
+  worksCount?: number;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 

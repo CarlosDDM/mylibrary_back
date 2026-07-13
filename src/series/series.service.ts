@@ -137,6 +137,7 @@ export class SeriesService extends BaseService<Serie> {
       .createQueryBuilder('serie')
       .leftJoinAndSelect('serie.status', 'status')
       .leftJoinAndSelect('serie.franchise', 'franchise')
+      .loadRelationCountAndMap('serie.worksCount', 'serie.works')
       .orderBy('serie.updatedAt', 'DESC')
       .take(take)
       .skip(skip);

@@ -26,6 +26,9 @@ export class ResponseSeriesDto {
   works: ResponseWorkDto[];
 
   @Expose()
+  worksCount: number;
+
+  @Expose()
   @Type(() => ResponseFranchiseDto)
   franchise: ResponseFranchiseDto | null;
 }
