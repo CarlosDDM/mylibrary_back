@@ -18,6 +18,7 @@ export class MainSeeder implements Seeder {
       [
         { type: MediaType.LIGHT_NOVEL },
         { type: MediaType.MANGA },
+        { type: MediaType.WEBTOON },
         { type: MediaType.BOOK },
       ],
       ['type'],
