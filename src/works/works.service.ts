@@ -16,7 +16,6 @@ import {
   Repository,
 } from 'typeorm';
 import { CacheService } from 'src/cache/cache.service';
-import { serieCacheKey, workCacheKey } from 'src/cache/cache.keys';
 import { SeriesService } from 'src/series/series.service';
 import { MediasService } from 'src/medias/medias.service';
 import { LanguagesService } from 'src/languages/languages.service';
@@ -42,37 +41,44 @@ export class WorksService extends BaseService<Work> {
     private readonly authorService: AuthorsService,
     private readonly illustratorService: IllustratorsService,
     private readonly dataSource: DataSource,
-    private readonly cacheService: CacheService,
+    cacheService: CacheService,
     private readonly fileService: FileService,
   ) {
-    super(workRepository, 'Work', {
-      covers: true,
-      media: true,
-      language: true,
-      workAuthors: {
-        author: true,
+    super(
+      workRepository,
+      'Work',
+      {
+        covers: true,
+        media: true,
+        language: true,
+        workAuthors: {
+          author: true,
+        },
+        workIllustrators: {
+          illustrator: true,
+        },
+        serie: true,
       },
-      workIllustrators: {
-        illustrator: true,
-      },
-      serie: true,
-    });
+      cacheService,
+    );
   }
 
   findOneById(id: string) {
-    return this.cacheService.wrap(workCacheKey(id), () => this.findOne({ id }));
+    return this.findOneByCache(id);
   }
 
   private async invalidate(
     workId: string,
     serieIds: Array<string | null | undefined>,
   ) {
-    const keys = new Set([workCacheKey(workId)]);
-    for (const serieId of serieIds) {
-      if (serieId) keys.add(serieCacheKey(serieId));
-    }
+    const uniqueSerieIds = [
+      ...new Set(serieIds.filter((id): id is string => !!id)),
+    ];
 
-    await Promise.all([...keys].map((key) => this.cacheService.del(key)));
+    await Promise.all([
+      this.invalidateCache(workId),
+      ...uniqueSerieIds.map((id) => this.serieService.invalidateCache(id)),
+    ]);
   }
 
   private async validateWorkData(
@@ -194,7 +200,7 @@ export class WorksService extends BaseService<Work> {
       ? await this.serieService.findOne({ id: createWorkDto.serieId })
       : null;
 
-    return this.dataSource.transaction(async (manager) => {
+    const created = await this.dataSource.transaction(async (manager) => {
       const { authors, illustrators, ...workData } = createWorkDto;
 
       const work = manager.create(Work, {
@@ -229,6 +235,12 @@ export class WorksService extends BaseService<Work> {
         relations: this.relations,
       });
     });
+
+    if (created) {
+      await this.invalidate(created.id, [createWorkDto.serieId]);
+    }
+
+    return created;
   }
 
   async update(id: string, updateWorkDto: UpdateWorkDto) {
@@ -317,7 +329,11 @@ export class WorksService extends BaseService<Work> {
     if (key) await this.fileService.deleteImage(key);
   }
 
-  findAll({
+  findAll(filterDto: FilterWorkDto) {
+    return this.cacheList({ ...filterDto }, () => this.queryAll(filterDto));
+  }
+
+  private queryAll({
     take = 30,
     skip = 0,
     name,

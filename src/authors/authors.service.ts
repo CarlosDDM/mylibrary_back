@@ -5,14 +5,16 @@ import { BaseService } from 'src/common/base.service';
 import { Author } from './entities/author.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
+import { CacheService } from 'src/cache/cache.service';
 
 @Injectable()
 export class AuthorsService extends BaseService<Author> {
   constructor(
     @InjectRepository(Author)
     private readonly authorRepository: Repository<Author>,
+    cacheService: CacheService,
   ) {
-    super(authorRepository, 'Author');
+    super(authorRepository, 'Author', undefined, cacheService);
   }
   private async validateAuthorData(dto: CreateAuthorDto | UpdateAuthorDto) {
     if (dto.name) {
@@ -32,6 +34,7 @@ export class AuthorsService extends BaseService<Author> {
     await this.validateAuthorData(createAuthorDto);
 
     const result = await this.repository.save(createAuthorDto);
+    await this.invalidateList();
     return this.findOne({ id: result.id });
   }
 
@@ -41,6 +44,7 @@ export class AuthorsService extends BaseService<Author> {
     if (updateAuthorDto.name !== result.name) {
       await this.validateAuthorData(updateAuthorDto);
       await this.repository.update({ id }, updateAuthorDto);
+      await this.invalidateCache(id);
       return this.findOne({ id });
     }
 

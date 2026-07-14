@@ -44,7 +44,7 @@ export class IllustratorsController {
       ? { name: ILike(`%${paginationDto.name}%`) }
       : undefined;
 
-    const [illustrators, total] = await this.illustratorsService.findAll(
+    const [illustrators, total] = await this.illustratorsService.findAllByCache(
       paginationDto,
       where,
     );
@@ -54,7 +54,7 @@ export class IllustratorsController {
   @Get(':id')
   @UseGuards(AuthenticatedGuard)
   findOne(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
-    return this.illustratorsService.findOne({ id });
+    return this.illustratorsService.findOneByCache(id);
   }
 
   @Patch(':id')

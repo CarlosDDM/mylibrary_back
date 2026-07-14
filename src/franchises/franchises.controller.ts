@@ -44,7 +44,7 @@ export class FranchisesController {
       ? { name: ILike(`%${paginationDto.name}%`) }
       : undefined;
 
-    const [franchises, total] = await this.franchisesService.findAll(
+    const [franchises, total] = await this.franchisesService.findAllByCache(
       paginationDto,
       where,
     );
@@ -54,7 +54,7 @@ export class FranchisesController {
   @Get(':id')
   @UseGuards(AuthenticatedGuard)
   findOne(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
-    return this.franchisesService.findOne({ id });
+    return this.franchisesService.findOneByCache(id);
   }
 
   @Patch(':id')

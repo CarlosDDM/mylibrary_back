@@ -9,7 +9,6 @@ import { FranchisesService } from 'src/franchises/franchises.service';
 import { BaseService } from 'src/common/base.service';
 import { FilterSerieDto } from './dto/filter-serie-dto';
 import { CacheService } from 'src/cache/cache.service';
-import { serieCacheKey } from 'src/cache/cache.keys';
 import { FileService } from 'src/file/file.service';
 import { generateImageFilename } from 'src/common/utils/generate-image-filename.utils';
 
@@ -20,26 +19,29 @@ export class SeriesService extends BaseService<Serie> {
     private readonly serieRepository: Repository<Serie>,
     private readonly statusService: StatusService,
     private readonly franchiseService: FranchisesService,
-    private readonly cacheService: CacheService,
+    cacheService: CacheService,
     private readonly fileService: FileService,
   ) {
-    super(serieRepository, 'Serie', {
-      status: true,
-      franchise: true,
-      works: {
-        covers: true,
-        language: true,
-        media: true,
-        workAuthors: { author: true },
-        workIllustrators: { illustrator: true },
+    super(
+      serieRepository,
+      'Serie',
+      {
+        status: true,
+        franchise: true,
+        works: {
+          covers: true,
+          language: true,
+          media: true,
+          workAuthors: { author: true },
+          workIllustrators: { illustrator: true },
+        },
       },
-    });
+      cacheService,
+    );
   }
 
   findOneById(id: string) {
-    return this.cacheService.wrap(serieCacheKey(id), () =>
-      this.findOne({ id }),
-    );
+    return this.findOneByCache(id);
   }
 
   private async validateSerieData(
@@ -64,6 +66,8 @@ export class SeriesService extends BaseService<Serie> {
 
     const newSerie = await this.repository.save(createSeriesDto);
 
+    await this.invalidateList();
+
     return this.findOne({ id: newSerie.id });
   }
 
@@ -75,7 +79,7 @@ export class SeriesService extends BaseService<Serie> {
 
     await this.repository.update({ id }, updateSeriesDto);
 
-    await this.cacheService.del(serieCacheKey(id));
+    await this.invalidateCache(id);
 
     return this.findOne({ id });
   }
@@ -83,7 +87,7 @@ export class SeriesService extends BaseService<Serie> {
   async delete(where: FindOptionsWhere<Serie>) {
     const serie = await super.delete(where);
 
-    await this.cacheService.del(serieCacheKey(serie.id));
+    await this.invalidateCache(serie.id);
 
     if (serie.coverUrl) {
       await this.removeCoverObject(serie.coverUrl);
@@ -100,7 +104,7 @@ export class SeriesService extends BaseService<Serie> {
     const { url } = await this.fileService.uploadImage(file, key);
 
     await this.repository.update({ id }, { coverUrl: url });
-    await this.cacheService.del(serieCacheKey(id));
+    await this.invalidateCache(id);
 
     if (previousUrl) {
       await this.removeCoverObject(previousUrl);
@@ -114,7 +118,7 @@ export class SeriesService extends BaseService<Serie> {
 
     if (serie.coverUrl) {
       await this.repository.update({ id }, { coverUrl: null });
-      await this.cacheService.del(serieCacheKey(id));
+      await this.invalidateCache(id);
       await this.removeCoverObject(serie.coverUrl);
     }
 
@@ -126,7 +130,11 @@ export class SeriesService extends BaseService<Serie> {
     if (key) await this.fileService.deleteImage(key);
   }
 
-  async findAll({
+  findAll(filterDto: FilterSerieDto): Promise<[Serie[], number]> {
+    return this.cacheList({ ...filterDto }, () => this.queryAll(filterDto));
+  }
+
+  private async queryAll({
     take = 20,
     skip = 0,
     name,

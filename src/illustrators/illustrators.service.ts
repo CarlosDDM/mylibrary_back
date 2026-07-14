@@ -5,14 +5,16 @@ import { BaseService } from 'src/common/base.service';
 import { Illustrator } from './entities/illustrator.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
+import { CacheService } from 'src/cache/cache.service';
 
 @Injectable()
 export class IllustratorsService extends BaseService<Illustrator> {
   constructor(
     @InjectRepository(Illustrator)
     private readonly illustratorRepository: Repository<Illustrator>,
+    cacheService: CacheService,
   ) {
-    super(illustratorRepository, 'Illustrator');
+    super(illustratorRepository, 'Illustrator', undefined, cacheService);
   }
 
   private async validateIllustratorData(
@@ -37,6 +39,7 @@ export class IllustratorsService extends BaseService<Illustrator> {
     await this.validateIllustratorData(createIllustratorDto);
 
     const result = await this.repository.save(createIllustratorDto);
+    await this.invalidateList();
     return this.findOne({ id: result.id });
   }
 
@@ -46,6 +49,7 @@ export class IllustratorsService extends BaseService<Illustrator> {
     if (updateIllustratorDto.name !== result.name) {
       await this.validateIllustratorData(updateIllustratorDto);
       await this.repository.update({ id }, updateIllustratorDto);
+      await this.invalidateCache(id);
 
       return this.findOne({ id });
     }

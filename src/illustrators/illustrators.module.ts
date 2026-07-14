@@ -3,9 +3,10 @@ import { IllustratorsService } from './illustrators.service';
 import { IllustratorsController } from './illustrators.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Illustrator } from './entities/illustrator.entity';
+import { CacheModule } from 'src/cache/cache.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Illustrator])],
+  imports: [TypeOrmModule.forFeature([Illustrator]), CacheModule],
   controllers: [IllustratorsController],
   providers: [IllustratorsService],
   exports: [IllustratorsService],

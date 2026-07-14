@@ -5,14 +5,16 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Franchise } from './entities/franchise.entity';
 import { Repository } from 'typeorm';
 import { BaseService } from 'src/common/base.service';
+import { CacheService } from 'src/cache/cache.service';
 
 @Injectable()
 export class FranchisesService extends BaseService<Franchise> {
   constructor(
     @InjectRepository(Franchise)
     private readonly franchiseRepository: Repository<Franchise>,
+    cacheService: CacheService,
   ) {
-    super(franchiseRepository, 'Franchise', { series: true });
+    super(franchiseRepository, 'Franchise', { series: true }, cacheService);
   }
   private async validateFranchise(
     dto: CreateFranchiseDto | UpdateFranchiseDto,
@@ -24,23 +26,21 @@ export class FranchisesService extends BaseService<Franchise> {
 
   async create(createFranchiseDto: CreateFranchiseDto) {
     await this.validateFranchise(createFranchiseDto);
-    const newFranchise = this.repository.save(createFranchiseDto);
+    const newFranchise = await this.repository.save(createFranchiseDto);
+    await this.invalidateList();
 
-    return this.findOne({ id: (await newFranchise).id });
+    return this.findOne({ id: newFranchise.id });
   }
 
   async update(id: string, updateFranchiseDto: UpdateFranchiseDto) {
     const franchise = await this.findOne({ id });
 
-    if (updateFranchiseDto.name !== franchise.name) {
+    if (updateFranchiseDto.name && updateFranchiseDto.name !== franchise.name) {
       await this.validateFranchise(updateFranchiseDto);
-
-      await this.repository.update({ id }, updateFranchiseDto);
-
-      return this.findOne({ id });
     }
 
     await this.repository.update({ id }, updateFranchiseDto);
+    await this.invalidateCache(id);
 
     return this.findOne({ id });
   }

@@ -44,7 +44,7 @@ export class AuthorsController {
       ? { name: ILike(`%${paginationDto.name}%`) }
       : undefined;
 
-    const [authors, total] = await this.authorsService.findAll(
+    const [authors, total] = await this.authorsService.findAllByCache(
       paginationDto,
       where,
     );
@@ -55,7 +55,7 @@ export class AuthorsController {
   @UseGuards(AuthenticatedGuard, RoleGuard)
   @Roles(Role.ADMIN)
   findOne(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
-    return this.authorsService.findOne({ id });
+    return this.authorsService.findOneByCache(id);
   }
 
   @Patch(':id')
