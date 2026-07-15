@@ -61,6 +61,7 @@ export class UsersController {
 
   @Get(':id')
   @UseGuards(AuthenticatedGuard, SelfOrAdminGuard)
+  @SerializeOptions({ type: ResponseUserRoleDto })
   findOne(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
     return this.usersService.findOne({ id });
   }
