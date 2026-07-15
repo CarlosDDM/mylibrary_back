@@ -8,10 +8,12 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { HashingService } from 'src/common/hashing/hashing.service';
 import { BaseService } from 'src/common/base.service';
 import { User } from './entities/user.entity';
-import { Repository } from 'typeorm';
+import { FindOptionsWhere, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UpdatePasswordDto } from './dto/update-password.dto';
 import { UpdatePasswordAdminDto } from './dto/update-password-admin.dto';
+import { Role } from 'src/common/enums/role.enum';
+import { SessionService } from 'src/session/session.service';
 
 @Injectable()
 export class UsersService extends BaseService<User> {
@@ -19,6 +21,7 @@ export class UsersService extends BaseService<User> {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     private readonly hashingService: HashingService,
+    private readonly sessionService: SessionService,
   ) {
     super(userRepository, 'Users');
   }
@@ -43,6 +46,12 @@ export class UsersService extends BaseService<User> {
     const hashedPassword = await this.hashingService.hash(password);
 
     return this.repository.save({ ...user, hashedPassword });
+  }
+
+  async delete(where: FindOptionsWhere<User>) {
+    const result = await super.delete(where);
+    await this.sessionService.destroyUserSessions(result.id);
+    return result;
   }
 
   async update(id: string, updateUserDto: UpdateUserDto) {
@@ -91,6 +100,7 @@ export class UsersService extends BaseService<User> {
     );
 
     await this.repository.update({ id }, { hashedPassword });
+    await this.sessionService.destroyUserSessions(id);
   }
 
   async uptadePasswordAdmin(
@@ -101,6 +111,42 @@ export class UsersService extends BaseService<User> {
     const hashedPassword = await this.hashingService.hash(newPassword);
 
     await this.repository.update({ id }, { hashedPassword });
+    await this.sessionService.destroyUserSessions(id);
+  }
+
+  async promoteRole(id: string) {
+    const user = await this.findOne({ id });
+
+    if (user.role === Role.ADMIN) {
+      throw new BadRequestException('O usuário já é um administrador');
+    }
+
+    await this.repository.update({ id }, { role: Role.ADMIN });
+    await this.sessionService.destroyUserSessions(id);
+
+    return this.findOne({ id });
+  }
+
+  private async canBeDemoted(id: string) {
+    const user = await this.findOne({ id });
+
+    if (user.role !== Role.ADMIN) {
+      throw new BadRequestException(`O ${user.username} já é um usuário`);
+    }
+
+    const totalAdmin = await this.repository.countBy({ role: Role.ADMIN });
+    if (totalAdmin <= 1) {
+      throw new BadRequestException('Deve existir pelo menos 1 administrador');
+    }
+  }
+
+  async demoteRole(id: string) {
+    await this.canBeDemoted(id);
+
+    await this.repository.update({ id }, { role: Role.USER });
+    await this.sessionService.destroyUserSessions(id);
+
+    return this.findOne({ id });
   }
 
   findOneOrNull(username: string) {

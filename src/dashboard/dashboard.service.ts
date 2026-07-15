@@ -4,8 +4,7 @@ import { Franchise } from 'src/franchises/entities/franchise.entity';
 import { Serie } from 'src/series/entities/serie.entity';
 import { Work } from 'src/works/entities/work.entity';
 import { DataSource } from 'typeorm';
-
-const STATISTICS_CACHE_KEY = 'dashboard:statistics';
+import { DASHBOARD_STATS_KEY } from 'src/cache/cache.keys';
 
 @Injectable()
 export class DashboardService {
@@ -15,7 +14,7 @@ export class DashboardService {
   ) {}
 
   findAll() {
-    return this.cacheService.wrap(STATISTICS_CACHE_KEY, () =>
+    return this.cacheService.wrap(DASHBOARD_STATS_KEY, () =>
       this.getStatistics(),
     );
   }

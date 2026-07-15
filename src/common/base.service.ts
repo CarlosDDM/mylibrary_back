@@ -135,6 +135,10 @@ export abstract class BaseService<T extends ObjectLiteral> {
       await this.cache.invalidateByPrefix(`${this.cacheKey}list:`);
   }
 
+  protected async invalidateKey(key: string) {
+    if (this.cache) await this.cache.del(key);
+  }
+
   async invalidateCache(id: string) {
     await Promise.all([this.invalidateId(id), this.invalidateList()]);
   }

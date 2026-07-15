@@ -22,11 +22,13 @@ import { PaginatedUserDto } from './dto/paginated-user.dto';
 import { paginate } from 'src/common/dto/response-paginated.dto';
 import { AuthenticatedGuard } from 'src/auth/guards/authenticated.guard';
 import { RoleGuard } from 'src/auth/guards/role.guard';
+import { SelfOrAdminGuard } from 'src/auth/guards/self-or-admin.guard';
 import { Role } from 'src/common/enums/role.enum';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { DefaultFilterDto } from 'src/common/dto/default-filter.dto';
 import { UpdatePasswordAdminDto } from './dto/update-password-admin.dto';
 import { ILike } from 'typeorm';
+import { ResponseUserRoleDto } from './dto/response-user-role-dto';
 
 @Controller('users')
 @SerializeOptions({ type: ResponseUserDto })
@@ -58,13 +60,13 @@ export class UsersController {
   }
 
   @Get(':id')
-  @UseGuards(AuthenticatedGuard)
+  @UseGuards(AuthenticatedGuard, SelfOrAdminGuard)
   findOne(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
     return this.usersService.findOne({ id });
   }
 
   @Patch(':id')
-  @UseGuards(AuthenticatedGuard)
+  @UseGuards(AuthenticatedGuard, SelfOrAdminGuard)
   update(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Body() updateUserDto: UpdateUserDto,
@@ -80,7 +82,7 @@ export class UsersController {
   }
 
   @Patch(':id/password')
-  @UseGuards(AuthenticatedGuard)
+  @UseGuards(AuthenticatedGuard, SelfOrAdminGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   updatePassword(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
@@ -98,5 +100,23 @@ export class UsersController {
     @Body() updatePassAdminDto: UpdatePasswordAdminDto,
   ) {
     return this.usersService.uptadePasswordAdmin(id, updatePassAdminDto);
+  }
+
+  @Post(':id/promote')
+  @UseGuards(AuthenticatedGuard, RoleGuard)
+  @Roles(Role.ADMIN)
+  @HttpCode(HttpStatus.OK)
+  @SerializeOptions({ type: ResponseUserRoleDto })
+  promoteRole(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
+    return this.usersService.promoteRole(id);
+  }
+
+  @Post(':id/demote')
+  @UseGuards(AuthenticatedGuard, RoleGuard)
+  @Roles(Role.ADMIN)
+  @HttpCode(HttpStatus.OK)
+  @SerializeOptions({ type: ResponseUserRoleDto })
+  demoteRole(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
+    return this.usersService.demoteRole(id);
   }
 }

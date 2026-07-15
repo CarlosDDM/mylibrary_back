@@ -1,4 +1,4 @@
 import { ResponsePaginated } from 'src/common/dto/response-paginated.dto';
-import { ResponseUserDto } from './response-user.dto';
+import { ResponseUserRoleDto } from './response-user-role-dto';
 
-export class PaginatedUserDto extends ResponsePaginated(ResponseUserDto) {}
+export class PaginatedUserDto extends ResponsePaginated(ResponseUserRoleDto) {}

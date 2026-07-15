@@ -8,6 +8,8 @@ export const illustratorCacheKey = (id: string) => `illustrator:${id}`;
 
 export const franchiseCacheKey = (id: string) => `franchise:${id}`;
 
+export const DASHBOARD_STATS_KEY = 'dashboard:statistics';
+
 export const cacheKeyById: Partial<Record<string, (id: string) => string>> = {
   Work: workCacheKey,
   Serie: serieCacheKey,

@@ -16,6 +16,7 @@ import {
   Repository,
 } from 'typeorm';
 import { CacheService } from 'src/cache/cache.service';
+import { DASHBOARD_STATS_KEY } from 'src/cache/cache.keys';
 import { SeriesService } from 'src/series/series.service';
 import { MediasService } from 'src/medias/medias.service';
 import { LanguagesService } from 'src/languages/languages.service';
@@ -77,6 +78,7 @@ export class WorksService extends BaseService<Work> {
 
     await Promise.all([
       this.invalidateCache(workId),
+      this.invalidateKey(DASHBOARD_STATS_KEY),
       ...uniqueSerieIds.map((id) => this.serieService.invalidateCache(id)),
     ]);
   }

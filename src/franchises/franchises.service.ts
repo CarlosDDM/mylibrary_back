@@ -3,9 +3,10 @@ import { CreateFranchiseDto } from './dto/create-franchise.dto';
 import { UpdateFranchiseDto } from './dto/update-franchise.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Franchise } from './entities/franchise.entity';
-import { Repository } from 'typeorm';
+import { FindOptionsWhere, Repository } from 'typeorm';
 import { BaseService } from 'src/common/base.service';
 import { CacheService } from 'src/cache/cache.service';
+import { DASHBOARD_STATS_KEY } from 'src/cache/cache.keys';
 
 @Injectable()
 export class FranchisesService extends BaseService<Franchise> {
@@ -28,8 +29,16 @@ export class FranchisesService extends BaseService<Franchise> {
     await this.validateFranchise(createFranchiseDto);
     const newFranchise = await this.repository.save(createFranchiseDto);
     await this.invalidateList();
+    await this.invalidateKey(DASHBOARD_STATS_KEY);
 
     return this.findOne({ id: newFranchise.id });
+  }
+
+  async delete(where: FindOptionsWhere<Franchise>) {
+    const result = await super.delete(where);
+    await this.invalidateKey(DASHBOARD_STATS_KEY);
+
+    return result;
   }
 
   async update(id: string, updateFranchiseDto: UpdateFranchiseDto) {

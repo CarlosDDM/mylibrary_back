@@ -9,6 +9,7 @@ import { FranchisesService } from 'src/franchises/franchises.service';
 import { BaseService } from 'src/common/base.service';
 import { FilterSerieDto } from './dto/filter-serie-dto';
 import { CacheService } from 'src/cache/cache.service';
+import { DASHBOARD_STATS_KEY } from 'src/cache/cache.keys';
 import { FileService } from 'src/file/file.service';
 import { generateImageFilename } from 'src/common/utils/generate-image-filename.utils';
 
@@ -67,6 +68,7 @@ export class SeriesService extends BaseService<Serie> {
     const newSerie = await this.repository.save(createSeriesDto);
 
     await this.invalidateList();
+    await this.invalidateKey(DASHBOARD_STATS_KEY);
 
     return this.findOne({ id: newSerie.id });
   }
@@ -88,6 +90,7 @@ export class SeriesService extends BaseService<Serie> {
     const serie = await super.delete(where);
 
     await this.invalidateCache(serie.id);
+    await this.invalidateKey(DASHBOARD_STATS_KEY);
 
     if (serie.coverUrl) {
       await this.removeCoverObject(serie.coverUrl);
