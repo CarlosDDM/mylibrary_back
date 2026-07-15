@@ -1,7 +1,7 @@
 # Mylibrary — Backend
 
 Backend do app **Mylibrary**, um microsserviço para gerenciamento de uma
-"estante" pessoal de obras (livros, mangás, HQs etc.), construído com
+"estante" pessoal de obras (livros, mangás, light novels e webtoons), construído com
 **Node.js + NestJS + TypeORM**. Fornece funcionalidades de criação, edição,
 exclusão e listagem com filtros e paginação, upload de imagens de capa para um
 armazenamento **S3-compatível** (ex.: Garage/MinIO/AWS S3), cache em **Redis**,
