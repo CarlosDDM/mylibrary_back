@@ -52,8 +52,7 @@ export class AuthorsController {
   }
 
   @Get(':id')
-  @UseGuards(AuthenticatedGuard, RoleGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(AuthenticatedGuard)
   findOne(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
     return this.authorsService.findOneByCache(id);
   }

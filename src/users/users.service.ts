@@ -103,7 +103,7 @@ export class UsersService extends BaseService<User> {
     await this.sessionService.destroyUserSessions(id);
   }
 
-  async uptadePasswordAdmin(
+  async updatePasswordAdmin(
     id: string,
     { newPassword }: UpdatePasswordAdminDto,
   ) {

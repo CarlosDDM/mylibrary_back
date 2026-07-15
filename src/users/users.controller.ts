@@ -100,7 +100,7 @@ export class UsersController {
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Body() updatePassAdminDto: UpdatePasswordAdminDto,
   ) {
-    return this.usersService.uptadePasswordAdmin(id, updatePassAdminDto);
+    return this.usersService.updatePasswordAdmin(id, updatePassAdminDto);
   }
 
   @Post(':id/promote')
