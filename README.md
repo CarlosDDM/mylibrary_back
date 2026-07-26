@@ -102,7 +102,8 @@ das variáveis `ADMIN_USERNAME`, `ADMIN_PASSWORD` e `ADMIN_EMAIL`.
 ## Cache
 
 As leituras mais custosas são cacheadas no **Redis** (via `cache-manager` +
-`@keyv/redis`), no banco lógico **db 1** (as sessões ficam no **db 0**):
+`@keyv/redis`), numa instância dedicada (`redis-cache`) separada da instância de
+sessões (`redis-session`) — o cache é descartável e evicta por LRU, a sessão não:
 
 - **Itens por id**: chaves `work:{id}`, `serie:{id}`, `author:{id}`, etc.
 - **Listagens**: chave `work:list:{params}` — a chave inclui paginação e
@@ -158,10 +159,11 @@ PORT=3000
 # Nº de proxies na frente da app (1 = nginx/traefik). true = confia em todos. Vazio = desligado
 TRUST_PROXY=1
 
-# Redis
-REDIS_HOST=localhost
-REDIS_PORT=6379
-REDIS_PASSWORD=
+# Redis — um host por client (cache e sessão)
+REDIS_CACHE_HOST=localhost
+REDIS_CACHE_PORT=6379
+REDIS_SESSION_HOST=localhost
+REDIS_SESSION_PORT=6379
 
 # CORS — origens permitidas, separadas por vírgula
 CORS_ORIGIN=http://localhost:4200

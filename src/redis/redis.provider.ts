@@ -5,25 +5,24 @@ import { createClient } from 'redis';
 export const REDIS_CACHE_CLIENT = Symbol('REDIS_CACHE_CLIENT');
 export const REDIS_SESSION_CLIENT = Symbol('REDIS_SESSION_CLIENT');
 
+type RedisHostPrefix = 'REDIS_SESSION' | 'REDIS_CACHE';
+
 type RedisClientConfig = {
   label: string;
-  database: number;
+  prefix: RedisHostPrefix;
   disableOfflineQueue: boolean;
 };
 
 const createRedisClient = async (
   config: ConfigService,
-  { label, database, disableOfflineQueue }: RedisClientConfig,
+  { label, prefix, disableOfflineQueue }: RedisClientConfig,
 ) => {
   const logger = new Logger(`Redis:${label}`);
+  const host = config.get<string>(`${prefix}_HOST`);
+  const port = Number(config.get(`${prefix}_PORT`));
 
   const client = createClient({
-    socket: {
-      host: config.get<string>('REDIS_HOST'),
-      port: Number(config.get('REDIS_PORT')),
-    },
-    password: config.get<string>('REDIS_PASSWORD') || undefined,
-    database,
+    url: `redis://${host}:${port}`,
     disableOfflineQueue,
   });
 
@@ -39,7 +38,7 @@ export const redisCacheClientProvider: Provider = {
   useFactory: (config: ConfigService) =>
     createRedisClient(config, {
       label: 'cache',
-      database: 1,
+      prefix: 'REDIS_CACHE',
       disableOfflineQueue: true,
     }),
 };
@@ -50,7 +49,7 @@ export const redisSessionClientProvider: Provider = {
   useFactory: (config: ConfigService) =>
     createRedisClient(config, {
       label: 'session',
-      database: 0,
+      prefix: 'REDIS_SESSION',
       disableOfflineQueue: false,
     }),
 };

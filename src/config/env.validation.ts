@@ -15,10 +15,11 @@ export const envValidationSchema = Joi.object({
   POSTGRES_PASSWORD: Joi.string().empty('').default('postgres'),
   POSTGRES_DB: Joi.string().empty('').default('mylibrary'),
 
-  // Redis
-  REDIS_HOST: Joi.string().empty('').default('localhost'),
-  REDIS_PORT: Joi.number().port().empty('').default(6379),
-  REDIS_PASSWORD: Joi.string().allow('').default(''),
+  // Redis (um host por client: cache e sessão)
+  REDIS_CACHE_HOST: Joi.string().empty('').default('localhost'),
+  REDIS_CACHE_PORT: Joi.number().port().empty('').default(6379),
+  REDIS_SESSION_HOST: Joi.string().empty('').default('localhost'),
+  REDIS_SESSION_PORT: Joi.number().port().empty('').default(6379),
 
   // CORS (origens separadas por vírgula)
   CORS_ORIGIN: Joi.string().empty('').default('http://localhost:4200'),
