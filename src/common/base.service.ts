@@ -3,11 +3,12 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Repository, ObjectLiteral, FindOptionsWhere } from 'typeorm';
+import { Repository, ObjectLiteral, FindOptionsWhere, ILike } from 'typeorm';
 
 import type { FindOptionsRelations } from 'typeorm';
 import { PaginationDto } from './dto/base.dto';
 import { DefaultFilterDto } from './dto/default-filter.dto';
+import { paginate } from './dto/response-paginated.dto';
 import { CacheService } from 'src/cache/cache.service';
 import { cacheKeyById, cacheKey } from 'src/cache/cache.keys';
 
@@ -37,19 +38,6 @@ export abstract class BaseService<T extends ObjectLiteral> {
   async validateNotExists(where: FindOptionsWhere<T>): Promise<void> {
     const exists = await this.repository.exists({ where });
     if (exists) throw new ConflictException(`${this.entityName} já existe`);
-  }
-
-  async findAll(
-    { take = 20, skip = 0 }: DefaultFilterDto,
-    where?: FindOptionsWhere<T>,
-  ) {
-    return this.repository.findAndCount({
-      relations: this.relations,
-      relationLoadStrategy: 'query',
-      take,
-      skip,
-      where,
-    });
   }
 
   async findOne(where: FindOptionsWhere<T>) {
@@ -120,9 +108,21 @@ export abstract class BaseService<T extends ObjectLiteral> {
     where?: FindOptionsWhere<T>,
   ) {
     const { take = 20, skip = 0 } = paginationDto;
-    return this.cacheList({ take, skip, where: where ?? {} }, () =>
-      this.findAll(paginationDto, where),
+    return this.cacheList({ take, skip, where: where ?? {} }, async () =>
+      paginate(await this.findAllBase({ take, skip }, where, this.relations), {
+        take,
+        skip,
+      }),
     );
+  }
+
+  async findAllByName(filterDto: DefaultFilterDto) {
+    const where = filterDto.name
+      ? ({
+          name: ILike(`%${filterDto.name}%`),
+        } as unknown as FindOptionsWhere<T>)
+      : undefined;
+    return this.findAllByCache(filterDto, where);
   }
 
   protected async invalidateId(id: string) {

@@ -14,14 +14,12 @@ import {
 import { FranchisesService } from './franchises.service';
 import { CreateFranchiseDto } from './dto/create-franchise.dto';
 import { UpdateFranchiseDto } from './dto/update-franchise.dto';
-import { PaginatedFranchiseDto } from './dto/paginated-franchise.dto';
-import { paginate } from 'src/common/dto/response-paginated.dto';
+import { PaginatedFranchiseResponse } from './dto/paginated-franchise.dto';
 import { AuthenticatedGuard } from 'src/auth/guards/authenticated.guard';
 import { RoleGuard } from 'src/auth/guards/role.guard';
 import { Role } from 'src/common/enums/role.enum';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { DefaultFilterDto } from 'src/common/dto/default-filter.dto';
-import { ILike } from 'typeorm';
 import { ResponseFranchiseDto } from './dto/response-franchise.dto';
 
 @Controller('franchises')
@@ -38,17 +36,9 @@ export class FranchisesController {
 
   @Get()
   @UseGuards(AuthenticatedGuard)
-  @SerializeOptions({ type: PaginatedFranchiseDto })
-  async findAll(@Query() paginationDto: DefaultFilterDto) {
-    const where = paginationDto.name
-      ? { name: ILike(`%${paginationDto.name}%`) }
-      : undefined;
-
-    const [franchises, total] = await this.franchisesService.findAllByCache(
-      paginationDto,
-      where,
-    );
-    return paginate([franchises, total], paginationDto);
+  @SerializeOptions({ type: PaginatedFranchiseResponse })
+  findAll(@Query() paginationDto: DefaultFilterDto) {
+    return this.franchisesService.findAllByName(paginationDto);
   }
 
   @Get(':id')

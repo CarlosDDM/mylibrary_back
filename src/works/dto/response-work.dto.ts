@@ -1,10 +1,4 @@
-import {
-  Exclude,
-  Expose,
-  plainToInstance,
-  Transform,
-  Type,
-} from 'class-transformer';
+import { Expose, plainToInstance, Transform, Type } from 'class-transformer';
 import { ResponseAuthorDto } from 'src/authors/dto/response-author.dto';
 import { ResponseIllustratorDto } from 'src/illustrators/dto/response-illustrator.dto';
 import { OptionsType } from 'src/options/dto/response-option.dto';
@@ -16,7 +10,6 @@ type WorkRaw = {
   workIllustrators?: { illustrator: { id: string; name: string } }[];
 };
 
-@Exclude()
 export class ResponseWorkDto {
   @Expose() id: string;
   @Expose() name: string;

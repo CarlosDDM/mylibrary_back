@@ -34,11 +34,14 @@ export class AuthController {
   @UseGuards(AuthenticatedGuard)
   @HttpCode(HttpStatus.OK)
   logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    const toError = (err: unknown) =>
+      err instanceof Error ? err : new Error(String(err));
+
     return new Promise<void>((resolve, reject) => {
       req.logout((err: unknown) => {
-        if (err) return reject(err);
+        if (err) return reject(toError(err));
         req.session.destroy((err: unknown) => {
-          if (err) return reject(err);
+          if (err) return reject(toError(err));
 
           res.clearCookie(this.configService.get('COOKIE_NAME')!);
           resolve();

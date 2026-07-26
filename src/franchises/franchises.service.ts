@@ -17,6 +17,7 @@ export class FranchisesService extends BaseService<Franchise> {
   ) {
     super(franchiseRepository, 'Franchise', { series: true }, cacheService);
   }
+
   private async validateFranchise(
     dto: CreateFranchiseDto | UpdateFranchiseDto,
   ) {

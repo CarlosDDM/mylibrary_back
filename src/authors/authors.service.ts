@@ -16,6 +16,7 @@ export class AuthorsService extends BaseService<Author> {
   ) {
     super(authorRepository, 'Author', undefined, cacheService);
   }
+
   private async validateAuthorData(dto: CreateAuthorDto | UpdateAuthorDto) {
     if (dto.name) {
       await this.validateNotExists({ name: dto.name });

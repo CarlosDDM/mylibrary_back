@@ -25,6 +25,7 @@ export class UsersService extends BaseService<User> {
   ) {
     super(userRepository, 'Users');
   }
+
   private async validateUser(dto: CreateUserDto) {
     if (dto.email) {
       await this.validateNotExists({

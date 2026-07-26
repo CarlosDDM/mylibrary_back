@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { SearchService } from './search.service';
 import { SearchQueryDto } from './dto/search-query.dto';
-import { ResponseSearchDto } from './dto/response-search-dto';
+import { ResponseSearchDto } from './dto/response-search.dto';
 import { AuthenticatedGuard } from 'src/auth/guards/authenticated.guard';
 
 @Controller('search')

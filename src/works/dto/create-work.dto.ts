@@ -13,12 +13,11 @@ import {
 
 export class CreateWorkDto {
   @IsString()
-  @IsOptional()
   name: string;
 
   @IsString()
   @IsOptional()
-  subtitle: string;
+  subtitle: string | null;
 
   @IsInt()
   @Min(0)
@@ -44,7 +43,7 @@ export class CreateWorkDto {
 
   @IsUUID()
   @IsOptional()
-  serieId: string;
+  serieId: string | null;
 
   @IsBoolean()
   @IsOptional()

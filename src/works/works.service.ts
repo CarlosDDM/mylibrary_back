@@ -28,6 +28,7 @@ import { Cover } from './entities/cover.entity';
 import { FilterWorkDto } from './dto/filter-work.dto';
 import { FileService } from 'src/file/file.service';
 import { generateImageFilename } from 'src/common/utils/generate-image-filename.utils';
+import { paginate } from 'src/common/dto/response-paginated.dto';
 
 @Injectable()
 export class WorksService extends BaseService<Work> {
@@ -198,17 +199,11 @@ export class WorksService extends BaseService<Work> {
 
   async create(createWorkDto: CreateWorkDto) {
     await this.validateWorkData(createWorkDto);
-    const serie = createWorkDto.serieId
-      ? await this.serieService.findOne({ id: createWorkDto.serieId })
-      : null;
 
     const created = await this.dataSource.transaction(async (manager) => {
       const { authors, illustrators, ...workData } = createWorkDto;
 
-      const work = manager.create(Work, {
-        ...workData,
-        name: createWorkDto.name ?? serie?.name,
-      });
+      const work = manager.create(Work, workData);
 
       const savedWork = await manager.save(Work, work);
 
@@ -332,7 +327,14 @@ export class WorksService extends BaseService<Work> {
   }
 
   findAll(filterDto: FilterWorkDto) {
-    return this.cacheList({ ...filterDto }, () => this.queryAll(filterDto));
+    const filter = {
+      ...filterDto,
+      take: filterDto.take ?? 30,
+      skip: filterDto.skip ?? 0,
+    };
+    return this.cacheList(filter, async () =>
+      paginate(await this.queryAll(filter), filter),
+    );
   }
 
   private queryAll({

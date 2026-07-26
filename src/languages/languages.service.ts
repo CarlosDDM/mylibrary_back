@@ -1,15 +1,21 @@
-import { Injectable } from '@nestjs/common';
-import { BaseService } from 'src/common/base.service';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Language } from './entities/language.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindOptionsWhere, Repository } from 'typeorm';
 
 @Injectable()
-export class LanguagesService extends BaseService<Language> {
+export class LanguagesService {
   constructor(
     @InjectRepository(Language)
     private readonly languageRepository: Repository<Language>,
-  ) {
-    super(languageRepository, 'Language');
+  ) {}
+
+  findAll() {
+    return this.languageRepository.find();
+  }
+
+  async validateExists(where: FindOptionsWhere<Language>): Promise<void> {
+    const exists = await this.languageRepository.exists({ where });
+    if (!exists) throw new NotFoundException('Language não encontrado');
   }
 }

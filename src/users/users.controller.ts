@@ -18,8 +18,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ResponseUserDto } from './dto/response-user.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
-import { PaginatedUserDto } from './dto/paginated-user.dto';
-import { paginate } from 'src/common/dto/response-paginated.dto';
+import { PaginatedUserResponse } from './dto/paginated-user.dto';
 import { AuthenticatedGuard } from 'src/auth/guards/authenticated.guard';
 import { RoleGuard } from 'src/auth/guards/role.guard';
 import { SelfOrAdminGuard } from 'src/auth/guards/self-or-admin.guard';
@@ -27,8 +26,7 @@ import { Role } from 'src/common/enums/role.enum';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { DefaultFilterDto } from 'src/common/dto/default-filter.dto';
 import { UpdatePasswordAdminDto } from './dto/update-password-admin.dto';
-import { ILike } from 'typeorm';
-import { ResponseUserRoleDto } from './dto/response-user-role-dto';
+import { ResponseUserRoleDto } from './dto/response-user-role.dto';
 
 @Controller('users')
 @SerializeOptions({ type: ResponseUserDto })
@@ -45,18 +43,9 @@ export class UsersController {
   @Get()
   @UseGuards(AuthenticatedGuard, RoleGuard)
   @Roles(Role.ADMIN)
-  @SerializeOptions({ type: PaginatedUserDto })
-  async findAll(@Query() paginationDto: DefaultFilterDto) {
-    const where = paginationDto.name
-      ? { name: ILike(`%${paginationDto.name}%`) }
-      : undefined;
-
-    const [users, total] = await this.usersService.findAll(
-      paginationDto,
-      where,
-    );
-
-    return paginate([users, total], paginationDto);
+  @SerializeOptions({ type: PaginatedUserResponse })
+  findAll(@Query() paginationDto: DefaultFilterDto) {
+    return this.usersService.findAllByName(paginationDto);
   }
 
   @Get(':id')

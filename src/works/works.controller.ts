@@ -21,7 +21,6 @@ import { AddCoverDto } from './dto/add-cover.dto';
 import { ValidateImagePipe } from 'src/file/pipe/validate-image.pipe';
 import { ResponseWorkDto } from './dto/response-work.dto';
 import { FilterWorkDto } from './dto/filter-work.dto';
-import { paginate } from 'src/common/dto/response-paginated.dto';
 import { PaginatedWorkResponse } from './dto/paginated-work.dto';
 import { AuthenticatedGuard } from 'src/auth/guards/authenticated.guard';
 import { Role } from 'src/common/enums/role.enum';
@@ -44,9 +43,8 @@ export class WorksController {
   @Get()
   @UseGuards(AuthenticatedGuard)
   @SerializeOptions({ type: PaginatedWorkResponse })
-  async findAll(@Query() filterDto: FilterWorkDto) {
-    const [works, total] = await this.worksService.findAll(filterDto);
-    return paginate([works, total], filterDto);
+  findAll(@Query() filterDto: FilterWorkDto) {
+    return this.worksService.findAll(filterDto);
   }
 
   @Get(':id')

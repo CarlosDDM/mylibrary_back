@@ -16,13 +16,11 @@ import { CreateIllustratorDto } from './dto/create-illustrator.dto';
 import { UpdateIllustratorDto } from './dto/update-illustrator.dto';
 import { ResponseIllustratorDto } from './dto/response-illustrator.dto';
 import { PaginatedIllustratorResponse } from './dto/paginated-illustrator.dto';
-import { paginate } from 'src/common/dto/response-paginated.dto';
 import { AuthenticatedGuard } from 'src/auth/guards/authenticated.guard';
 import { RoleGuard } from 'src/auth/guards/role.guard';
 import { Role } from 'src/common/enums/role.enum';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { DefaultFilterDto } from 'src/common/dto/default-filter.dto';
-import { ILike } from 'typeorm';
 
 @Controller('illustrators')
 @SerializeOptions({ type: ResponseIllustratorDto })
@@ -39,16 +37,8 @@ export class IllustratorsController {
   @Get()
   @UseGuards(AuthenticatedGuard)
   @SerializeOptions({ type: PaginatedIllustratorResponse })
-  async findAll(@Query() paginationDto: DefaultFilterDto) {
-    const where = paginationDto.name
-      ? { name: ILike(`%${paginationDto.name}%`) }
-      : undefined;
-
-    const [illustrators, total] = await this.illustratorsService.findAllByCache(
-      paginationDto,
-      where,
-    );
-    return paginate([illustrators, total], paginationDto);
+  findAll(@Query() paginationDto: DefaultFilterDto) {
+    return this.illustratorsService.findAllByName(paginationDto);
   }
 
   @Get(':id')

@@ -19,10 +19,9 @@ import { SeriesService } from './series.service';
 import { ValidateImagePipe } from 'src/file/pipe/validate-image.pipe';
 import { CreateSeriesDto } from './dto/create-series.dto';
 import { UpdateSeriesDto } from './dto/update-series.dto';
-import { paginate } from 'src/common/dto/response-paginated.dto';
 import { PaginatedSeriesResponse } from './dto/paginated-series.dto';
 import { ResponseSeriesDto } from './dto/response-series.dto';
-import { FilterSerieDto } from './dto/filter-serie-dto';
+import { FilterSerieDto } from './dto/filter-serie.dto';
 import { AuthenticatedGuard } from 'src/auth/guards/authenticated.guard';
 import { RoleGuard } from 'src/auth/guards/role.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
@@ -43,9 +42,8 @@ export class SeriesController {
   @Get()
   @UseGuards(AuthenticatedGuard)
   @SerializeOptions({ type: PaginatedSeriesResponse })
-  async findAll(@Query() filterSerieDto: FilterSerieDto) {
-    const [series, total] = await this.seriesService.findAll(filterSerieDto);
-    return paginate([series, total], filterSerieDto);
+  findAll(@Query() filterSerieDto: FilterSerieDto) {
+    return this.seriesService.findAll(filterSerieDto);
   }
 
   @Get(':id')

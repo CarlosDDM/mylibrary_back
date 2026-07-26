@@ -3,32 +3,21 @@ import {
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { S3_CLIENT } from './s3.provider';
 
 @Injectable()
 export class FileService {
-  private readonly s3Client: S3Client;
   private readonly bucket: string;
   private readonly s3WebUrl: string;
 
-  constructor(private readonly configService: ConfigService) {
+  constructor(
+    private readonly configService: ConfigService,
+    @Inject(S3_CLIENT) private readonly s3Client: S3Client,
+  ) {
     this.bucket = this.configService.get<string>('S3_BUCKET')!;
     this.s3WebUrl = this.configService.get<string>('S3_WEB_URL')!;
-
-    const endpoint = this.configService.get<string>('S3_API_URL');
-    const accessKeyId = this.configService.get<string>('S3_KEY_ID');
-    const secretAccessKey = this.configService.get<string>('S3_SECRET_KEY');
-
-    this.s3Client = new S3Client({
-      region: this.configService.get<string>('S3_REGION'),
-      forcePathStyle:
-        this.configService.get<string>('S3_PATH_STYLE') === 'true',
-      ...(endpoint ? { endpoint } : {}),
-      ...(accessKeyId && secretAccessKey
-        ? { credentials: { accessKeyId, secretAccessKey } }
-        : {}),
-    });
   }
 
   async uploadImage(file: Express.Multer.File, key: string) {

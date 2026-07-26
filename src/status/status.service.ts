@@ -1,15 +1,21 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Status } from './entities/status.entity';
-import { Repository } from 'typeorm';
-import { BaseService } from 'src/common/base.service';
+import { FindOptionsWhere, Repository } from 'typeorm';
 
 @Injectable()
-export class StatusService extends BaseService<Status> {
+export class StatusService {
   constructor(
     @InjectRepository(Status)
     private readonly statusRepository: Repository<Status>,
-  ) {
-    super(statusRepository, 'Status');
+  ) {}
+
+  findAll() {
+    return this.statusRepository.find();
+  }
+
+  async validateExists(where: FindOptionsWhere<Status>): Promise<void> {
+    const exists = await this.statusRepository.exists({ where });
+    if (!exists) throw new NotFoundException('Status não encontrado');
   }
 }

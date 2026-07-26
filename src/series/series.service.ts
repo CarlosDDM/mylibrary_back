@@ -7,11 +7,12 @@ import { FindOptionsWhere, Repository } from 'typeorm';
 import { StatusService } from 'src/status/status.service';
 import { FranchisesService } from 'src/franchises/franchises.service';
 import { BaseService } from 'src/common/base.service';
-import { FilterSerieDto } from './dto/filter-serie-dto';
+import { FilterSerieDto } from './dto/filter-serie.dto';
 import { CacheService } from 'src/cache/cache.service';
 import { DASHBOARD_STATS_KEY } from 'src/cache/cache.keys';
 import { FileService } from 'src/file/file.service';
 import { generateImageFilename } from 'src/common/utils/generate-image-filename.utils';
+import { paginate } from 'src/common/dto/response-paginated.dto';
 
 @Injectable()
 export class SeriesService extends BaseService<Serie> {
@@ -133,8 +134,15 @@ export class SeriesService extends BaseService<Serie> {
     if (key) await this.fileService.deleteImage(key);
   }
 
-  findAll(filterDto: FilterSerieDto): Promise<[Serie[], number]> {
-    return this.cacheList({ ...filterDto }, () => this.queryAll(filterDto));
+  findAll(filterDto: FilterSerieDto) {
+    const filter = {
+      ...filterDto,
+      take: filterDto.take ?? 20,
+      skip: filterDto.skip ?? 0,
+    };
+    return this.cacheList(filter, async () =>
+      paginate(await this.queryAll(filter), filter),
+    );
   }
 
   private async queryAll({

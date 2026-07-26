@@ -15,14 +15,12 @@ import { AuthorsService } from './authors.service';
 import { CreateAuthorDto } from './dto/create-author.dto';
 import { UpdateAuthorDto } from './dto/update-author.dto';
 import { PaginatedAuthorResponse } from './dto/pagination-author.dto';
-import { paginate } from 'src/common/dto/response-paginated.dto';
 import { ResponseAuthorDto } from './dto/response-author.dto';
 import { AuthenticatedGuard } from 'src/auth/guards/authenticated.guard';
 import { Role } from 'src/common/enums/role.enum';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { RoleGuard } from 'src/auth/guards/role.guard';
 import { DefaultFilterDto } from 'src/common/dto/default-filter.dto';
-import { ILike } from 'typeorm';
 
 @Controller('authors')
 @SerializeOptions({ type: ResponseAuthorDto })
@@ -39,16 +37,8 @@ export class AuthorsController {
   @Get()
   @UseGuards(AuthenticatedGuard)
   @SerializeOptions({ type: PaginatedAuthorResponse })
-  async findAll(@Query() paginationDto: DefaultFilterDto) {
-    const where = paginationDto.name
-      ? { name: ILike(`%${paginationDto.name}%`) }
-      : undefined;
-
-    const [authors, total] = await this.authorsService.findAllByCache(
-      paginationDto,
-      where,
-    );
-    return paginate([authors, total], paginationDto);
+  findAll(@Query() paginationDto: DefaultFilterDto) {
+    return this.authorsService.findAllByName(paginationDto);
   }
 
   @Get(':id')
