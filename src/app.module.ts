@@ -16,7 +16,6 @@ import { SearchModule } from './search/search.module';
 import { AuthModule } from './auth/auth.module';
 import { CacheModule } from './cache/cache.module';
 import { RedisModule } from './redis/redis.module';
-import { FileService } from './file/file.service';
 import { FileModule } from './file/file.module';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
@@ -73,7 +72,6 @@ import { envValidationSchema } from './config/env.validation';
     FileModule,
   ],
   providers: [
-    FileService,
     { provide: APP_GUARD, useClass: ThrottlerGuard },
     { provide: APP_FILTER, useClass: AllExceptionsFilter },
     { provide: APP_INTERCEPTOR, useClass: LoggingInterceptor },
