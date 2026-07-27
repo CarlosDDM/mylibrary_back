@@ -40,8 +40,15 @@ export class FilterWorkDto extends PaginationDto {
 
   @IsOptional()
   @IsBoolean()
-  @Transform(({ value }) =>
-    value === 'true' ? true : value === 'false' ? false : undefined,
-  )
+  @Transform(({ value }: { value: unknown }) => {
+    if (value === 'true' || value === true) return true;
+    if (value === 'false' || value === false) return false;
+    // Query vazia conta como filtro ausente, igual ao name do DefaultFilterDto.
+    if (value === '' || value === undefined) return undefined;
+    // Qualquer outra coisa segue crua para o @IsBoolean recusar com 400, em vez
+    // de virar undefined e o filtro ser silenciosamente ignorado — é o mesmo
+    // tratamento que mediaIds e os demais filtros já davam.
+    return value;
+  })
   isSpecialEdition?: boolean;
 }

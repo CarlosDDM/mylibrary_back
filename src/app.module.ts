@@ -18,9 +18,17 @@ import { CacheModule } from './cache/cache.module';
 import { RedisModule } from './redis/redis.module';
 import { FileModule } from './file/file.module';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
-import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import {
+  APP_FILTER,
+  APP_GUARD,
+  APP_INTERCEPTOR,
+  APP_PIPE,
+  Reflector,
+} from '@nestjs/core';
+import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
+import { AppMiddlewareModule } from './common/middleware/app-middleware.module';
 import { envValidationSchema } from './config/env.validation';
 
 @Module({
@@ -70,11 +78,28 @@ import { envValidationSchema } from './config/env.validation';
     CacheModule,
     RedisModule,
     FileModule,
+    AppMiddlewareModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
     { provide: APP_FILTER, useClass: AllExceptionsFilter },
     { provide: APP_INTERCEPTOR, useClass: LoggingInterceptor },
+    {
+      provide: APP_PIPE,
+      useValue: new ValidationPipe({
+        whitelist: true,
+        forbidNonWhitelisted: true,
+        transform: true,
+      }),
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      inject: [Reflector],
+      useFactory: (reflector: Reflector) =>
+        new ClassSerializerInterceptor(reflector, {
+          excludeExtraneousValues: true,
+        }),
+    },
   ],
 })
 export class AppModule {}

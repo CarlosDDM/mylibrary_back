@@ -1,0 +1,27 @@
+# Override de desenvolvimento.
+#
+# Troca a imagem de produção do app pela Dockerfile.dev, que mantém as
+# devDependencies e o código-fonte — necessário para o watch e para rodar
+# os testes e2e dentro da rede docker.
+#
+# Uso:
+#   make up-dev      # sobe a stack em modo dev
+#   make test-e2e    # roda os testes dentro do container app
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      args:
+        - PORT=${PORT}
+    volumes:
+      # Código do host montado no container: editar em src/ ou test/ reflete
+      # sem rebuild. O volume anônimo preserva o node_modules da imagem.
+      - .:/app
+      - /app/node_modules
+
+  # Única porta publicada, para inspecionar o banco por um cliente gráfico.
+  # Os testes não dependem disso — rodam dentro da rede docker.
+  postgres:
+    ports:
+      - "127.0.0.1:5432:5432"

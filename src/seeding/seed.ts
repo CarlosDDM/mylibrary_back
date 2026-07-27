@@ -15,9 +15,11 @@ datasource
   .initialize()
   .then(async () => {
     await runSeeders(datasource);
-    process.exit();
+    process.exit(0);
   })
   .catch((err) => {
-    console.error('Erro ao entrar executar o seeder', err);
-    process.exit();
+    // Sair com 1 é o que faz o `set -e` do entrypoint.sh derrubar o start.
+    // Com exit code 0 o container subia normalmente com o banco incompleto.
+    console.error('Erro ao executar o seeder', err);
+    process.exit(1);
   });

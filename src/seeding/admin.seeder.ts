@@ -26,6 +26,15 @@ export class AdminSeeder implements Seeder {
       );
     }
 
+    const existente = await userRepo.findOneBy({ username });
+    if (existente) {
+      logger.warn(
+        `AdminSeeder: "${username}" existe sem ser admin, promovendo.`,
+      );
+      await userRepo.update({ id: existente.id }, { role: Role.ADMIN });
+      return;
+    }
+
     const salt = await bcrypt.genSalt(Number(process.env.SALT) || 10);
     const hashedPassword = await bcrypt.hash(password, salt);
 

@@ -49,7 +49,28 @@ export class UsersService extends BaseService<User> {
     return this.repository.save({ ...user, hashedPassword });
   }
 
+  /**
+   * Recusa remover o último administrador da base. Sem esta regra não sobra
+   * ninguém que passe no RoleGuard e a API fica inadministrável — não há
+   * caminho pela própria API para sair desse estado.
+   *
+   * Em produção o entrypoint roda o seeder a cada start, então um restart
+   * recriaria o admin a partir do ADMIN_USERNAME/ADMIN_PASSWORD. Mesmo assim
+   * a regra vale: o intervalo até o próximo restart é de escrita bloqueada, e
+   * o admin recuperado volta com outro id.
+   */
+  private async validateNotLastAdmin(user: User) {
+    if (user.role !== Role.ADMIN) return;
+
+    const totalAdmin = await this.repository.countBy({ role: Role.ADMIN });
+    if (totalAdmin <= 1) {
+      throw new BadRequestException('Deve existir pelo menos 1 administrador');
+    }
+  }
+
   async delete(where: FindOptionsWhere<User>) {
+    await this.validateNotLastAdmin(await this.findOne(where));
+
     const result = await super.delete(where);
     await this.sessionService.destroyUserSessions(result.id);
     return result;
@@ -135,10 +156,7 @@ export class UsersService extends BaseService<User> {
       throw new BadRequestException(`O ${user.username} já é um usuário`);
     }
 
-    const totalAdmin = await this.repository.countBy({ role: Role.ADMIN });
-    if (totalAdmin <= 1) {
-      throw new BadRequestException('Deve existir pelo menos 1 administrador');
-    }
+    await this.validateNotLastAdmin(user);
   }
 
   async demoteRole(id: string) {

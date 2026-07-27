@@ -40,10 +40,10 @@ export const envValidationSchema = Joi.object({
   // Bcrypt
   SALT: Joi.number().empty('').default(10),
 
-  // Admin inicial — usado pelo seeder (processo separado, via dotenv).
-  // Aqui só declarado para documentar/validar formato quando presente.
-  ADMIN_USERNAME: Joi.string().allow(''),
-  ADMIN_PASSWORD: Joi.string().allow(''),
+  // Admin inicial — usado pelo seeder. Obrigatórios: sem eles o seeder falha
+  // e a base sobe sem nenhum admin, o que deixaria a API inadministrável.
+  ADMIN_USERNAME: Joi.string().empty('').required(),
+  ADMIN_PASSWORD: Joi.string().empty('').required(),
   ADMIN_EMAIL: Joi.string().email().allow(''),
 
   // S3 / Garage

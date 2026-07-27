@@ -165,6 +165,46 @@ describe('UsersService', () => {
       expect(userRepository.delete).not.toHaveBeenCalled();
       expect(sessionService.destroyUserSessions).not.toHaveBeenCalled();
     });
+
+    it('deveria recusar deletar o último admin', async () => {
+      userRepository.findOne.mockResolvedValue({
+        ...value[0],
+        role: Role.ADMIN,
+      });
+      userRepository.countBy.mockResolvedValue(1);
+
+      await expect(service.delete({ id: 'user-1' })).rejects.toThrow(
+        BadRequestException,
+      );
+
+      expect(userRepository.delete).not.toHaveBeenCalled();
+      expect(sessionService.destroyUserSessions).not.toHaveBeenCalled();
+    });
+
+    it('deveria deletar um admin quando existe outro', async () => {
+      const admin = { ...value[0], role: Role.ADMIN };
+      userRepository.findOne.mockResolvedValue(admin);
+      userRepository.countBy.mockResolvedValue(2);
+      userRepository.delete.mockResolvedValue({ affected: 1, raw: [] });
+
+      await service.delete({ id: 'user-1' });
+
+      expect(userRepository.delete).toHaveBeenCalledWith({ id: 'user-1' });
+      expect(sessionService.destroyUserSessions).toHaveBeenCalledWith('user-1');
+    });
+
+    it('não deveria contar admins ao deletar um usuário comum', async () => {
+      userRepository.findOne.mockResolvedValue({
+        ...value[0],
+        role: Role.USER,
+      });
+      userRepository.delete.mockResolvedValue({ affected: 1, raw: [] });
+
+      await service.delete({ id: 'user-1' });
+
+      expect(userRepository.countBy).not.toHaveBeenCalled();
+      expect(userRepository.delete).toHaveBeenCalledWith({ id: 'user-1' });
+    });
   });
 
   describe('create', () => {

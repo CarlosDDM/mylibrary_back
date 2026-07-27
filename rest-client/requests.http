@@ -1,4 +1,4 @@
-@URL_API=https://api.cddmlab.com
+@URL_API=http://localhost:3000
 @SERIE_ID=dde866e6-5a6e-4cb2-ae25-1c26fe816a67
 @FRANCHISE_ID={{createFranchise.response.body.id}}
 
@@ -267,7 +267,7 @@ Content-Type: application/json
 
 {
   "username": "admin",
-  "password": "password"
+  "password": "admin_test_pw"
 }
 
 ### LOGIN — credenciais erradas: deve dar 401
