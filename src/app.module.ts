@@ -30,6 +30,7 @@ import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { AppMiddlewareModule } from './common/middleware/app-middleware.module';
 import { envValidationSchema } from './config/env.validation';
+import { HealthModule } from './health/health.module';
 
 @Module({
   imports: [
@@ -79,6 +80,7 @@ import { envValidationSchema } from './config/env.validation';
     RedisModule,
     FileModule,
     AppMiddlewareModule,
+    HealthModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
