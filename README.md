@@ -1,8 +1,8 @@
 # Mylibrary — Backend
 
 Backend do app **Mylibrary**, um microsserviço para gerenciamento de uma
-"estante" pessoal de obras (livros, mangás, light novels e webtoons), construído com
-**Node.js + NestJS + TypeORM**. Fornece funcionalidades de criação, edição,
+"estante" pessoal de obras (livros, mangás, light novels e webtoons), construído
+com **Node.js + NestJS + TypeORM**. Fornece funcionalidades de criação, edição,
 exclusão e listagem com filtros e paginação, upload de imagens de capa para um
 armazenamento **S3-compatível** (ex.: Garage/MinIO/AWS S3), cache em **Redis**,
 autenticação por **sessão** e controle de acesso por papéis (roles).
@@ -49,6 +49,11 @@ O acervo é modelado em torno das seguintes entidades:
   e `SESSION_SECRET` obrigatório em produção.
 - **Segurança e Robustez**: Helmet, CORS por whitelist, rate limiting
   (throttler), validação global de payloads e filtro global de exceções.
+- **Documentação OpenAPI**: Swagger UI opcional em `/docs`, com corpo, resposta
+  e erros de cada rota descritos (`ACTIVE_SWAGGER`).
+- **Health checks**: probes de liveness e readiness (`/health/live` e
+  `/health/ready`), esta última verificando PostgreSQL e os dois Redis.
+- **Testes**: 26 suítes unitárias e 9 suítes end-to-end contra a stack real.
 
 ## Tecnologias Utilizadas
 
@@ -61,6 +66,8 @@ O acervo é modelado em torno das seguintes entidades:
 - Passport (`passport-local`) + `express-session` + `connect-redis`
 - Helmet, `@nestjs/throttler`, `class-validator` / `class-transformer`
 - Joi (validação de variáveis de ambiente)
+- `@nestjs/swagger` (OpenAPI) e `@nestjs/terminus` (health checks)
+- Jest e Supertest (testes unitários e e2e)
 - Docker / Docker Compose / PM2
 - ESLint e Prettier
 
@@ -103,7 +110,8 @@ das variáveis `ADMIN_USERNAME`, `ADMIN_PASSWORD` e `ADMIN_EMAIL`.
 
 As leituras mais custosas são cacheadas no **Redis** (via `cache-manager` +
 `@keyv/redis`), numa instância dedicada (`redis-cache`) separada da instância de
-sessões (`redis-session`) — o cache é descartável e evicta por LRU, a sessão não:
+sessões (`redis-session`) — o cache é descartável e evicta por LRU, a sessão
+não:
 
 - **Itens por id**: chaves `work:{id}`, `serie:{id}`, `author:{id}`, etc.
 - **Listagens**: chave `work:list:{params}` — a chave inclui paginação e
@@ -158,6 +166,8 @@ POSTGRES_DB=mylibrary
 PORT=3000
 # Nº de proxies na frente da app (1 = nginx/traefik). true = confia em todos. Vazio = desligado
 TRUST_PROXY=1
+# Publica a doc Swagger em /docs. true | false (fallback: false)
+ACTIVE_SWAGGER=false
 
 # Redis — um host por client (cache e sessão)
 REDIS_CACHE_HOST=localhost
@@ -194,11 +204,12 @@ S3_SECRET_KEY=<sua-secret-key>
 S3_PATH_STYLE=false
 ```
 
-> As variáveis são **validadas por Joi no boot** (`src/config/env.validation.ts`):
-> os tipos são checados/coeridos e a maioria tem fallback, então a app sobe em
-> dev sem um `.env` completo. `SESSION_SECRET` é **obrigatório em produção** (a
-> app não sobe sem ele). Variáveis reais de ambiente têm **prioridade** sobre o
-> `.env` — dá pra rodar 100% sem arquivo, só com env do Docker/K8s.
+> As variáveis são **validadas por Joi no boot**
+> (`src/config/env.validation.ts`): os tipos são checados/coeridos e a maioria
+> tem fallback, então a app sobe em dev sem um `.env` completo. `SESSION_SECRET`
+> é **obrigatório em produção** (a app não sobe sem ele). Variáveis reais de
+> ambiente têm **prioridade** sobre o `.env` — dá pra rodar 100% sem arquivo, só
+> com env do Docker/K8s.
 
 > Em `development` (`NODE_ENV != production`), o TypeORM usa `synchronize: true`
 > e cria/atualiza as tabelas automaticamente ao iniciar. Em produção, use as
@@ -224,29 +235,145 @@ npm run seed                 # popula dados de referência e o admin inicial
 ## Docker
 
 > **Recomendado:** se você ainda não tem PostgreSQL e Redis rodando localmente,
-> use a stack do Docker Compose — ela sobe **app + PostgreSQL + Redis** já
-> configurados e conectados, sem precisar instalar/configurar cada serviço na
+> use a stack do Docker Compose — ela sobe **app + PostgreSQL + os dois Redis**
+> já configurados e conectados, sem precisar instalar/configurar cada serviço na
 > mão. Basta um `.env` preenchido e `make up`.
 
-O projeto acompanha `docker-compose.yml` (app + PostgreSQL + Redis) e um
-`Makefile` com atalhos. Em produção, o container roda migrations e seeders no
-`entrypoint.sh` e sobe a aplicação com PM2 em modo cluster.
+O `docker-compose.yml` sobe quatro serviços: `app`, `postgres`, `redis-cache` e
+`redis-session`. Os dois Redis têm configuração diferente de propósito —
+`redis-cache` roda sem persistência, com teto de 256 MB e política
+`allkeys-lru`; `redis-session` persiste em volume e usa `noeviction`, porque
+despejar uma sessão significa deslogar alguém. Todos os serviços têm
+healthcheck, e o `app` só sobe depois que os três estiverem saudáveis.
+
+Em produção o `entrypoint.sh` roda migrations e seeders antes de subir a
+aplicação com PM2 em modo cluster.
 
 ```bash
-make up        # sobe os containers (docker compose up -d)
+make help      # lista todos os alvos disponíveis
+make up        # sobe os containers
 make rebuild   # rebuild e sobe os containers
 make logs      # acompanha os logs do container app
 make down      # derruba os containers
 make restart   # reinicia os containers
 ```
 
+### Modo desenvolvimento
+
+O `docker-compose.dev.yml` é um override que troca a imagem de produção pela
+`Dockerfile.dev`: mantém as devDependencies, monta o código do host em `/app`
+(editar `src/` reflete sem rebuild) e publica a porta do PostgreSQL em
+`127.0.0.1:5432` para inspeção por cliente gráfico.
+
+```bash
+make up-dev    # sobe a stack em modo dev (watch + devDependencies)
+make db-reset  # dropa e recria o schema, limpa os Redis e roda o seed
+```
+
+> O `db-reset` limpa o Redis junto, e não por acaso: o seed gera UUIDs novos
+> para status, mídias e idiomas, e `GET /options` fica cacheado por 7 dias. Sem
+> o flush, a API continuaria servindo ids que já não existem no banco.
+
+## Testes
+
+```bash
+npm test           # unitários (26 suítes)
+npm run test:cov   # unitários com cobertura
+npm run test:e2e   # end-to-end (9 suítes)
+```
+
+Os testes **unitários** ficam ao lado do código (`src/**/*.spec.ts`) e usam
+mocks — não precisam de banco nem Redis.
+
+Os **e2e** (`test/*.e2e-spec.ts`) sobem a aplicação inteira com o `AppModule`
+real e batem nas rotas via Supertest, então precisam de PostgreSQL e Redis de
+verdade. Como o `.env` aponta para os hostnames da rede Docker, rode-os dentro
+do container:
+
+```bash
+make test-e2e
+```
+
+Por padrão o `ThrottlerStorage` é substituído por um stub que nunca bloqueia — a
+suíte dispara dezenas de requisições por segundo e tomaria `429` aleatório. O
+`throttler.e2e-spec.ts` passa `comThrottler: true` para exercitar os limites de
+verdade.
+
+## Documentação da API (Swagger)
+
+Com `ACTIVE_SWAGGER=true`, a aplicação publica a documentação OpenAPI em
+**`/docs`**:
+
+```
+http://localhost:3000/docs
+```
+
+> Mantenha `false` em produção: a doc lista todas as rotas, inclusive as de
+> admin.
+
+A doc é gerada pelo plugin do `@nestjs/swagger` (configurado no `nest-cli.json`
+com `introspectComments: true`) somado a decorators explícitos nos controllers.
+Cada operação declara:
+
+- o **corpo** aceito, a partir do DTO — incluindo os `PATCH`, que usam
+  `PartialType` do `@nestjs/swagger` para herdar os campos do DTO de criação;
+- a **resposta de sucesso** tipada pelo DTO de resposta, e não pela entidade do
+  TypeORM — o que sai na rede é o que está documentado;
+- os **erros** possíveis (`400`, `401`, `403`, `404`, `409`, `413`, `429`), com
+  exemplos de corpo no formato do `AllExceptionsFilter`;
+- um **resumo** de uma linha, escrito como JSDoc acima do handler.
+
+O `withCredentials` já vem ligado, então dá para autenticar pelo
+`POST /auth/login` no próprio Swagger UI e sair testando as rotas protegidas — o
+cookie de sessão é reaproveitado nas chamadas seguintes.
+
+## Health checks
+
+| Método | Rota            | Descrição                                          |
+| ------ | --------------- | -------------------------------------------------- |
+| GET    | `/health/live`  | Liveness. Responde `200` enquanto o processo vive. |
+| GET    | `/health/ready` | Readiness. Verifica PostgreSQL e os dois Redis.    |
+
+Ambas são **públicas** (não exigem sessão) e isentas de rate limiting.
+
+O `/health/ready` responde `200` quando as três dependências respondem, e `503`
+quando qualquer uma falha. O corpo segue o formato do Terminus, com `error`
+listando só o que caiu e `details` listando tudo:
+
+```json
+{
+  "status": "error",
+  "info": {
+    "redis-cache": { "responseTime": 2, "status": "up" },
+    "redis-session": { "responseTime": 1, "status": "up" }
+  },
+  "error": {
+    "postgres": { "message": "timeout of 2000ms exceeded", "status": "down" }
+  },
+  "details": {
+    "postgres": { "message": "timeout of 2000ms exceeded", "status": "down" },
+    "redis-cache": { "responseTime": 2, "status": "up" },
+    "redis-session": { "responseTime": 1, "status": "up" }
+  }
+}
+```
+
+Cada indicador tem timeout de 2 s. Um `HealthCheckFilter` escopado no controller
+preserva esse corpo, que de outra forma seria reescrito pelo filtro global de
+exceções — e aí se perderia justamente a informação de qual dependência caiu.
+
 ## Endpoints
 
-> Todas as rotas (exceto `POST /auth/login`) exigem sessão autenticada.
+> Todas as rotas exigem sessão autenticada, exceto `POST /auth/login` e as duas
+> de `/health`.
 >
 > - 🔒 = exclusivo de **admin** (`role: admin`); usuário comum recebe `403`.
 > - 🙋 = **dono ou admin** (o usuário só acessa os próprios dados).
 > - Sem marcador = qualquer usuário autenticado.
+>
+> Todas estão sujeitas ao rate limiting global de **20 req/s, 100 req/10s e 300
+> req/min** por IP, com exceção de `/health`. O `POST /auth/login` tem um limite
+> próprio, mais apertado: **5 tentativas por minuto**.
 
 ### Autenticação
 
@@ -258,15 +385,15 @@ make restart   # reinicia os containers
 
 ### Obras (`/works`)
 
-| Método | Rota                            | Descrição                                           |
-| ------ | ------------------------------- | --------------------------------------------------- |
-| POST   | `/works` 🔒                     | Cria uma obra.                                      |
-| GET    | `/works`                        | Lista obras com filtros e paginação.                |
-| GET    | `/works/:id`                    | Detalha uma obra.                                   |
-| PATCH  | `/works/:id` 🔒                 | Atualiza uma obra.                                  |
-| DELETE | `/works/:id` 🔒                 | Remove uma obra.                                    |
-| POST   | `/works/:id/covers` 🔒          | Envia uma capa (multipart, campo `file`, máx. 5MB). |
-| DELETE | `/works/:id/covers/:coverId` 🔒 | Remove uma capa da obra.                            |
+| Método | Rota                            | Descrição                                            |
+| ------ | ------------------------------- | ---------------------------------------------------- |
+| POST   | `/works` 🔒                     | Cria uma obra.                                       |
+| GET    | `/works`                        | Lista obras com filtros e paginação.                 |
+| GET    | `/works/:id`                    | Detalha uma obra.                                    |
+| PATCH  | `/works/:id` 🔒                 | Atualiza uma obra.                                   |
+| DELETE | `/works/:id` 🔒                 | Remove uma obra.                                     |
+| POST   | `/works/:id/covers` 🔒          | Envia uma capa (multipart, campo `file`, máx. 5 MB). |
+| DELETE | `/works/:id/covers/:coverId` 🔒 | Remove uma capa da obra.                             |
 
 **Filtros e paginação de `GET /works`:**
 
@@ -300,7 +427,10 @@ GET /works?skip=0&take=10&name=NomeDaObra&isSpecialEdition=true
 ```
 
 O upload da capa é feito em uma requisição separada (`POST /works/:id/covers`)
-como `multipart/form-data`.
+como `multipart/form-data`, no campo `file`. São aceitos **jpeg, png e webp**,
+com no máximo **5 MB** — fora disso a API responde `400` (formato) ou `413`
+(tamanho). O campo opcional `isSpecialEdition` marca a capa como de edição
+especial.
 
 ### Séries (`/series`)
 
@@ -350,14 +480,39 @@ para autenticados; escrita (`POST`, `PATCH`, `DELETE`) exige **admin** 🔒.
 
 ```json
 {
-  "data": [
-    /* ... */
-  ],
+  "data": [/* ... */],
   "total": 50,
   "pages": 5,
   "current_page": 1
 }
 ```
+
+### Formato de erro
+
+Todo erro passa pelo `AllExceptionsFilter` e sai no mesmo formato, com `message`
+sempre em array — a validação de payload devolve várias mensagens de uma vez:
+
+```json
+{
+  "message": ["name should not be empty"],
+  "error": "Bad Request",
+  "statusCode": 400
+}
+```
+
+| Status | Quando                                                                   |
+| ------ | ------------------------------------------------------------------------ |
+| `400`  | Payload reprovado na validação, ou id de rota que não é um UUID v4.      |
+| `401`  | Sem sessão, ou sessão expirada/invalidada.                               |
+| `403`  | Autenticado mas sem permissão (não é admin, ou não é o dono do recurso). |
+| `404`  | Recurso inexistente.                                                     |
+| `409`  | Violação de unicidade (nome já cadastrado, volume repetido na série).    |
+| `413`  | Upload acima de 5 MB.                                                    |
+| `429`  | Rate limit estourado.                                                    |
+
+> O `ValidationPipe` roda com `whitelist` e `forbidNonWhitelisted`, então mandar
+> um campo que o DTO não declara também derruba com `400`
+> (`property X should not exist`) em vez de ser ignorado silenciosamente.
 
 ## Observação sobre o armazenamento S3
 

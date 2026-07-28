@@ -26,7 +26,7 @@ async function bootstrap() {
           'Autentique-se pelo POST /auth/login antes de testar as rotas protegidas.',
       )
       .addCookieAuth(config.get<string>('COOKIE_NAME'))
-      .setVersion('1.0')
+      .setVersion('1.1.0')
       .addTag('auth', 'Login, logout e sessão do usuário')
       .addTag('health', 'Probes de liveness e readiness')
       .addTag('works', 'Obras e suas capas')
