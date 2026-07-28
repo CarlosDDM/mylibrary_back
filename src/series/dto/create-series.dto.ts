@@ -15,7 +15,7 @@ export class CreateSeriesDto {
   @IsInt()
   @Min(0)
   @IsOptional()
-  serieVolumes: number | null;
+  serieVolumes?: number | null;
 
   @IsUUID()
   @IsNotEmpty()
@@ -23,5 +23,5 @@ export class CreateSeriesDto {
 
   @IsUUID()
   @IsOptional()
-  franchiseId: string | null;
+  franchiseId?: string | null;
 }

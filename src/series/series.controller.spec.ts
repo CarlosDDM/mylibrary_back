@@ -90,7 +90,7 @@ describe('SeriesController', () => {
       const dto: CreateSeriesDto = {
         name: 'serie-1',
         statusId: 'status-1',
-      } as CreateSeriesDto;
+      };
 
       const result = await controller.create(dto);
 

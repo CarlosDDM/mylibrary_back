@@ -108,7 +108,7 @@ describe('WorksController', () => {
         name: 'A obra',
         mediaId: 'media-1',
         languageId: 'language-1',
-      } as CreateWorkDto;
+      };
 
       const result = await controller.create(dto);
 

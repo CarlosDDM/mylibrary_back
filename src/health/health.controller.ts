@@ -7,10 +7,10 @@ import {
 } from '@nestjs/terminus';
 import { RedisHealthIndicator } from './indicators/redis.indicator';
 import { HealthCheckFilter } from './filters/health-check.filter';
+import { ApiTags } from '@nestjs/swagger';
+import { ApiHealthLive, ApiHealthReady } from './docs/health.docs';
 
-// Os throttlers precisam ser nomeados um a um: @SkipThrottle() sem argumento
-// assume { default: true }, e os throttlers registrados no app.module se chamam
-// short, medium e long — nenhum é 'default'. Sem isso o probe toma 429.
+@ApiTags('health')
 @Controller('health')
 @SkipThrottle({ short: true, medium: true, long: true })
 @UseFilters(HealthCheckFilter)
@@ -21,13 +21,17 @@ export class HealthController {
     private readonly redis: RedisHealthIndicator,
   ) {}
 
+  /** Liveness: responde 200 enquanto o processo estiver de pé */
   @Get('live')
+  @ApiHealthLive()
   live() {
     return { status: 'ok' };
   }
 
+  /** Readiness: verifica Postgres e os dois Redis */
   @Get('ready')
-  @HealthCheck()
+  @HealthCheck({ noCache: true, swaggerDocumentation: false })
+  @ApiHealthReady()
   check() {
     return this.health.check([
       () => this.database.pingCheck('postgres', { timeout: 2000 }),

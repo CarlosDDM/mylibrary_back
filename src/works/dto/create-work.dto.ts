@@ -17,21 +17,21 @@ export class CreateWorkDto {
 
   @IsString()
   @IsOptional()
-  subtitle: string | null;
+  subtitle?: string | null;
 
   @IsInt()
   @Min(0)
   @IsOptional()
-  volume: number | null;
+  volume?: number | null;
 
   @IsString()
   @IsOptional()
-  volumeName: string | null;
+  volumeName?: string | null;
 
   @IsOptional()
   @IsNumber()
   @Min(0)
-  price: number | null;
+  price?: number | null;
 
   @IsUUID()
   @IsNotEmpty()
@@ -43,21 +43,21 @@ export class CreateWorkDto {
 
   @IsUUID()
   @IsOptional()
-  serieId: string | null;
+  serieId?: string | null;
 
   @IsBoolean()
   @IsOptional()
-  isSpecialEdition: boolean;
+  isSpecialEdition?: boolean;
 
   @Transform(({ value }: { value: string[] }) => [...new Set(value)])
   @IsOptional()
   @IsArray()
   @IsUUID('4', { each: true })
-  authors: string[] = [];
+  authors?: string[] = [];
 
   @Transform(({ value }: { value: string[] }) => [...new Set(value)])
   @IsOptional()
   @IsArray()
   @IsUUID('4', { each: true })
-  illustrators: string[] = [];
+  illustrators?: string[] = [];
 }

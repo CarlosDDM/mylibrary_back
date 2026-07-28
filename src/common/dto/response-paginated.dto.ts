@@ -1,4 +1,5 @@
 import { Type } from '@nestjs/common';
+import { ApiProperty } from '@nestjs/swagger';
 import { Expose, Type as TransformationType } from 'class-transformer';
 import { PaginationDto } from './base.dto';
 
@@ -11,13 +12,22 @@ export interface IPaginated<T> {
 
 export function ResponsePaginated<T>(classRef: Type<T>): Type<IPaginated<T>> {
   class PaginatedHost implements IPaginated<T> {
+    @ApiProperty({ type: () => classRef, isArray: true })
     @Expose()
     @TransformationType(() => classRef)
     data: T[];
 
-    @Expose() total: number;
-    @Expose() pages: number;
-    @Expose() current_page: number;
+    @ApiProperty({ example: 137 })
+    @Expose()
+    total: number;
+
+    @ApiProperty({ example: 7 })
+    @Expose()
+    pages: number;
+
+    @ApiProperty({ example: 1 })
+    @Expose()
+    current_page: number;
   }
 
   return PaginatedHost;

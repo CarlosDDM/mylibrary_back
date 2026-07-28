@@ -1,4 +1,5 @@
 import { Type } from '@nestjs/common';
+import { ApiProperty } from '@nestjs/swagger';
 import { Expose, Type as TransformationType } from 'class-transformer';
 import { ResponseCoverDto } from 'src/works/dto/response-cover.dto';
 
@@ -9,10 +10,12 @@ interface ISearchDto<T> {
 
 function responseSearch<T>(classRef: Type<T>): Type<ISearchDto<T>> {
   class SearchHost implements ISearchDto<T> {
+    @ApiProperty({ type: () => classRef, isArray: true })
     @Expose()
     @TransformationType(() => classRef)
     data: T[];
 
+    @ApiProperty({ example: 42 })
     @Expose()
     total: number;
   }

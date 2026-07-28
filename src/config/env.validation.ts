@@ -7,6 +7,12 @@ export const envValidationSchema = Joi.object({
   PORT: Joi.number().port().empty('').default(3000),
   // Nº de proxies na frente da app. Vazio = desligado.
   TRUST_PROXY: Joi.string().allow('').default(''),
+  // Publica a documentação Swagger em /docs. Desligado por padrão: a doc
+  // expõe o mapa completo das rotas, inclusive as de admin.
+  ACTIVE_SWAGGER: Joi.string()
+    .valid('true', 'false')
+    .empty('')
+    .default('false'),
 
   // PostgreSQL
   DB_HOST: Joi.string().empty('').default('localhost'),
