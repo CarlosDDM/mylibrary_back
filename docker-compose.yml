@@ -26,7 +26,7 @@ services:
     container_name: redis-session
     command: ["redis-server", "--maxmemory-policy", "noeviction"]
     volumes:
-      - /home/carlos/data/redis:/data
+      - session_volume:/data
     networks:
       - app-nest
     healthcheck:
@@ -42,7 +42,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
-      - /home/carlos/data/postgres:/var/lib/postgresql/data
+      - postgres_db:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
@@ -72,3 +72,7 @@ services:
 networks:
   app-nest:
     driver: bridge
+
+volumes:
+  session_volume:
+  postgres_db:
