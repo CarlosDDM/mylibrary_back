@@ -57,7 +57,7 @@ export class AuthorsController {
     return this.authorsService.create(createAuthorDto);
   }
 
-  /** Lista autores paginados, com filtro por nome */
+  /** Lista autores paginados. O filtro `name` é full text: casa prefixo de palavra e ignora acento */
   @Get()
   @UseGuards(AuthenticatedGuard)
   @SerializeOptions({ type: PaginatedAuthorResponse })

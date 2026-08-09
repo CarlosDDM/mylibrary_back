@@ -5,7 +5,6 @@ import {
   ForbiddenException,
   NotFoundException,
 } from '@nestjs/common';
-import { ILike } from 'typeorm';
 import { Role } from 'src/common/enums/role.enum';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { UsersService } from './users.service';
@@ -20,6 +19,7 @@ describe('UsersService', () => {
     findOne: jest.Mock;
     findOneBy: jest.Mock;
     findAndCount: jest.Mock;
+    createQueryBuilder: jest.Mock;
     save: jest.Mock;
     update: jest.Mock;
     delete: jest.Mock;
@@ -34,12 +34,29 @@ describe('UsersService', () => {
     { id: 'user-3', name: 'A grande um', username: 'user3', email: 'c@c.com' },
   ];
 
+  let queryBuilder: {
+    where: jest.Mock;
+    take: jest.Mock;
+    skip: jest.Mock;
+    setFindOptions: jest.Mock;
+    getManyAndCount: jest.Mock;
+  };
+
   beforeEach(async () => {
+    queryBuilder = {
+      where: jest.fn().mockReturnThis(),
+      take: jest.fn().mockReturnThis(),
+      skip: jest.fn().mockReturnThis(),
+      setFindOptions: jest.fn().mockReturnThis(),
+      getManyAndCount: jest.fn(),
+    };
+
     userRepository = {
       exists: jest.fn(),
       findOne: jest.fn(),
       findOneBy: jest.fn(),
       findAndCount: jest.fn(),
+      createQueryBuilder: jest.fn().mockReturnValue(queryBuilder),
       save: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
@@ -65,8 +82,8 @@ describe('UsersService', () => {
   });
 
   describe('findAllByName', () => {
-    it('busca com ILike quando tem name e retorna paginado', async () => {
-      userRepository.findAndCount.mockResolvedValue([value, 2]);
+    it('busca por full text quando tem name e retorna paginado', async () => {
+      queryBuilder.getManyAndCount.mockResolvedValue([value, 2]);
 
       const result = await service.findAllByName({
         name: 'coisa',
@@ -80,13 +97,13 @@ describe('UsersService', () => {
         pages: 1,
         current_page: 1,
       });
-      expect(userRepository.findAndCount).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: { name: ILike('%coisa%') },
-          take: 20,
-          skip: 0,
-        }),
+      expect(userRepository.createQueryBuilder).toHaveBeenCalled();
+      expect(queryBuilder.where).toHaveBeenCalledWith(
+        expect.stringContaining('to_tsquery'),
+        { term: 'coisa' },
       );
+      expect(queryBuilder.take).toHaveBeenCalledWith(20);
+      expect(queryBuilder.skip).toHaveBeenCalledWith(0);
     });
 
     it('sem name, busca sem where de nome', async () => {

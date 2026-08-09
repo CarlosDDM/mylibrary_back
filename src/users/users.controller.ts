@@ -67,7 +67,7 @@ export class UsersController {
     return this.usersService.create(createUserDto);
   }
 
-  /** Lista usuários paginados, com filtro por nome */
+  /** Lista usuários paginados. O filtro `name` é full text: casa prefixo de palavra e ignora acento */
   @Get()
   @UseGuards(AuthenticatedGuard, RoleGuard)
   @Roles(Role.ADMIN)

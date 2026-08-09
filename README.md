@@ -37,7 +37,10 @@ O acervo é modelado em torno das seguintes entidades:
 - **Listagem com Filtros e Paginação**: listagem de obras com filtros dinâmicos
   (nome, mídias, idiomas, autores, ilustradores, edição especial) e paginação
   via `skip`/`take`.
-- **Busca**: endpoint de busca unificada (`/search`).
+- **Busca full text**: busca por prefixo de palavra e indiferente a acento,
+  sobre o full text search do PostgreSQL — no endpoint unificado (`/search`,
+  obras e séries numa chamada só) e nos filtros `name` de autores, franquias,
+  ilustradores e usuários.
 - **Dashboard**: estatísticas do acervo (`/dashboard/statistics`).
 - **Usuários e Papéis**: CRUD de usuários, troca de senha (própria e por admin)
   e promoção/rebaixamento de papel (`admin`/`user`). As rotas de autosserviço
@@ -129,6 +132,57 @@ não:
 
 O Redis também guarda as **sessões** de autenticação (db 0, prefixo
 `mylibrary:`).
+
+## Busca
+
+A busca usa o **full text search do PostgreSQL**, com uma text search
+configuration própria criada na migration:
+
+```sql
+CREATE TEXT SEARCH CONFIGURATION public.simple_unaccent (COPY = pg_catalog.simple)
+ALTER ... WITH unaccent, simple
+```
+
+É a `simple` (sem stemmer e sem stopword) mais o dicionário `unaccent`. Os
+títulos do acervo são majoritariamente nomes próprios japoneses e ingleses, em
+que o stemmer de português atrapalha — ele apaga o `no` de "Kimetsu **no**
+Yaiba" por confundir com a contração, e corta "Yaiba" em `yaib`.
+
+Cada tabela buscável tem um índice GIN sobre a expressão indexada:
+
+| Tabela         | Colunas indexadas  |
+| -------------- | ------------------ |
+| `works`        | `name`, `subtitle` |
+| `series`       | `name`             |
+| `authors`      | `name`             |
+| `franchises`   | `name`             |
+| `illustrators` | `name`             |
+| `users`        | `name`             |
+
+O termo digitado é convertido em `tsquery` pelo **mesmo parser** que indexa
+(`to_tsvector` → `tsvector_to_array` → `:*` em cada lexema), então as duas
+pontas nunca divergem na tokenização.
+
+**O que a busca faz:**
+
+- casa **prefixo de palavra** — `kimet` acha "Kimetsu no Yaiba";
+- ignora **acento** nos dois sentidos — `coracao` acha "Coração de Tinta", e o
+  dado gravado continua acentuado;
+- ignora **ordem das palavras** — `man chainsaw` acha "Chainsaw Man";
+- aceita **pontuação livre** no termo — `naruto!`, `vol. 2`, `yu-gi-oh 5`.
+
+**O que ela não faz:**
+
+- não casa no **meio da palavra** — `leach` não acha "Bleach";
+- não tolera **erro de digitação** — `bersek` não acha "Berserk".
+
+Isso vale para **todos** os pontos de busca por nome: o `/search` unificado, os
+filtros `name` das listagens de obras e séries (onde o nome convive com os
+filtros de mídia, idioma, autor, ilustrador, franquia e status) e as listagens
+de autores, franquias, ilustradores e usuários.
+
+O limite de tamanho do termo no `/search` é o `@MaxLength(200)` do DTO — acima
+disso a requisição recebe `400`.
 
 ## Configuração e Instalação
 
@@ -231,6 +285,11 @@ npm run migration:run        # aplica as migrations
 npm run migration:revert     # reverte a última migration
 npm run seed                 # popula dados de referência e o admin inicial
 ```
+
+> A migration da busca roda `CREATE EXTENSION unaccent` e
+> `CREATE TEXT SEARCH CONFIGURATION`, que exigem privilégio de superusuário no
+> PostgreSQL. Em dev o `synchronize` cria as tabelas a partir das entities, mas
+> **não** cria os índices GIN da busca — eles vêm só pela migration.
 
 ## Docker
 
@@ -472,7 +531,7 @@ para autenticados; escrita (`POST`, `PATCH`, `DELETE`) exige **admin** 🔒.
 
 | Método | Rota                    | Descrição                                           |
 | ------ | ----------------------- | --------------------------------------------------- |
-| GET    | `/search`               | Busca unificada (query `name`, paginado).           |
+| GET    | `/search`               | Busca full text de obras e séries (query `name`).   |
 | GET    | `/dashboard/statistics` | Estatísticas do acervo.                             |
 | GET    | `/options`              | Dados de referência (mídias, idiomas, status etc.). |
 
@@ -486,6 +545,21 @@ para autenticados; escrita (`POST`, `PATCH`, `DELETE`) exige **admin** 🔒.
   "current_page": 1
 }
 ```
+
+### Formato de resposta da busca
+
+O `/search` aceita `take`/`skip`, mas devolve um envelope próprio — dois grupos,
+cada um com `data` e `total`, sem `pages`/`current_page`:
+
+```json
+{
+  "works": { "data": [/* ... */], "total": 12 },
+  "series": { "data": [/* ... */], "total": 3 }
+}
+```
+
+Sem o parâmetro `name`, os dois grupos voltam vazios (a busca não lista o acervo
+inteiro — para isso use `GET /works` e `GET /series`).
 
 ### Formato de erro
 

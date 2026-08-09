@@ -63,7 +63,7 @@ export class SeriesController {
     return this.seriesService.create(createSeriesDto);
   }
 
-  /** Lista séries paginadas, com filtro por nome, franquia e status */
+  /** Lista séries paginadas, com filtro por franquia e status. O filtro `name` é full text: casa prefixo de palavra e ignora acento */
   @Get()
   @UseGuards(AuthenticatedGuard)
   @SerializeOptions({ type: PaginatedSeriesResponse })

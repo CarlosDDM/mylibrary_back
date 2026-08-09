@@ -524,10 +524,8 @@ describe('WorksService', () => {
       });
 
       expect(queryBuilder.andWhere).toHaveBeenCalledWith(
-        'work.name ILIKE :name',
-        {
-          name: '%obra%',
-        },
+        expect.stringContaining('to_tsquery'),
+        { term: 'obra' },
       );
       expect(queryBuilder.andWhere).toHaveBeenCalledWith(
         'media.id IN (:...mediaIds)',

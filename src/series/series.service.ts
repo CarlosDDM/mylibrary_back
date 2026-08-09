@@ -13,6 +13,11 @@ import { DASHBOARD_STATS_KEY } from 'src/cache/cache.keys';
 import { FileService } from 'src/file/file.service';
 import { generateImageFilename } from 'src/common/utils/generate-image-filename.utils';
 import { paginate } from 'src/common/dto/response-paginated.dto';
+import { PaginationDto } from 'src/common/dto/base.dto';
+import {
+  fullTextWhere,
+  searchByFullText,
+} from 'src/common/utils/full-text-search.utils';
 
 @Injectable()
 export class SeriesService extends BaseService<Serie> {
@@ -44,6 +49,14 @@ export class SeriesService extends BaseService<Serie> {
 
   findOneById(id: string) {
     return this.findOneByCache(id);
+  }
+
+  search(pagination: PaginationDto, term?: string | null) {
+    return searchByFullText(this.repository, {
+      ...pagination,
+      term,
+      columns: ['name'],
+    });
   }
 
   private async validateSerieData(
@@ -162,7 +175,7 @@ export class SeriesService extends BaseService<Serie> {
       .skip(skip);
 
     if (name) {
-      qb.andWhere('serie.name ILIKE :name', { name: `%${name}%` });
+      qb.andWhere(fullTextWhere('serie', ['name']), { term: name });
     }
 
     if (franchiseIds?.length) {
