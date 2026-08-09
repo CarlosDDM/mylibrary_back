@@ -30,7 +30,10 @@ import { FileService } from 'src/file/file.service';
 import { generateImageFilename } from 'src/common/utils/generate-image-filename.utils';
 import { paginate } from 'src/common/dto/response-paginated.dto';
 import { PaginationDto } from 'src/common/dto/base.dto';
-import { searchByFullText } from 'src/common/utils/full-text-search.utils';
+import {
+  fullTextWhere,
+  searchByFullText,
+} from 'src/common/utils/full-text-search.utils';
 
 @Injectable()
 export class WorksService extends BaseService<Work> {
@@ -369,7 +372,7 @@ export class WorksService extends BaseService<Work> {
       .leftJoinAndSelect('work.workIllustrators', 'workIllustrators')
       .leftJoinAndSelect('workIllustrators.illustrator', 'illustrator');
     if (name) {
-      qb.andWhere('work.name ILIKE :name', { name: `%${name}%` });
+      qb.andWhere(fullTextWhere('work', ['name', 'subtitle']), { term: name });
     }
     if (mediaIds?.length) {
       qb.andWhere('media.id IN (:...mediaIds)', { mediaIds });

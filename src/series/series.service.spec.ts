@@ -556,8 +556,8 @@ describe('SeriesService', () => {
       await service.findAll({ name: 'serie', statusIds: ['status-1'] });
 
       expect(queryBuilder.andWhere).toHaveBeenCalledWith(
-        'serie.name ILIKE :name',
-        { name: '%serie%' },
+        expect.stringContaining('to_tsquery'),
+        { term: 'serie' },
       );
       expect(queryBuilder.andWhere).toHaveBeenCalledWith(
         'status.id IN (:...statusIds)',

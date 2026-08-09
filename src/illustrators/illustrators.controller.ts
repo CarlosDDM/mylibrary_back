@@ -57,7 +57,7 @@ export class IllustratorsController {
     return this.illustratorsService.create(createIllustratorDto);
   }
 
-  /** Lista ilustradores paginados, com filtro por nome */
+  /** Lista ilustradores paginados. O filtro `name` é full text: casa prefixo de palavra e ignora acento */
   @Get()
   @UseGuards(AuthenticatedGuard)
   @SerializeOptions({ type: PaginatedIllustratorResponse })

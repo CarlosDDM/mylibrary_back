@@ -57,7 +57,7 @@ export class FranchisesController {
     return this.franchisesService.create(createFranchiseDto);
   }
 
-  /** Lista franquias paginadas, com filtro por nome */
+  /** Lista franquias paginadas. O filtro `name` é full text: casa prefixo de palavra e ignora acento */
   @Get()
   @UseGuards(AuthenticatedGuard)
   @SerializeOptions({ type: PaginatedFranchiseResponse })

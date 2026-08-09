@@ -23,7 +23,7 @@ import {
 export class SearchController {
   constructor(private readonly searchService: SearchService) {}
 
-  /** Busca obras e séries pelo nome, numa chamada só */
+  /** Busca full text de obras e séries numa chamada só. Casa prefixo de palavra, ignora acento e ordem das palavras */
   @Get()
   @UseGuards(AuthenticatedGuard)
   @SerializeOptions({ type: ResponseSearchDto })

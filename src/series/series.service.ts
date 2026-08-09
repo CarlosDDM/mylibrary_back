@@ -14,7 +14,10 @@ import { FileService } from 'src/file/file.service';
 import { generateImageFilename } from 'src/common/utils/generate-image-filename.utils';
 import { paginate } from 'src/common/dto/response-paginated.dto';
 import { PaginationDto } from 'src/common/dto/base.dto';
-import { searchByFullText } from 'src/common/utils/full-text-search.utils';
+import {
+  fullTextWhere,
+  searchByFullText,
+} from 'src/common/utils/full-text-search.utils';
 
 @Injectable()
 export class SeriesService extends BaseService<Serie> {
@@ -172,7 +175,7 @@ export class SeriesService extends BaseService<Serie> {
       .skip(skip);
 
     if (name) {
-      qb.andWhere('serie.name ILIKE :name', { name: `%${name}%` });
+      qb.andWhere(fullTextWhere('serie', ['name']), { term: name });
     }
 
     if (franchiseIds?.length) {

@@ -17,6 +17,14 @@ function tsQuery(parameter: string) {
   return `to_tsquery('${SEARCH_CONFIG}', nullif(array_to_string(${lexemes}, ':* & '), '') || ':*')`;
 }
 
+export function fullTextWhere(
+  alias: string,
+  columns: string[],
+  parameter = ':term',
+) {
+  return `${tsVector(alias, columns)} @@ ${tsQuery(parameter)}`;
+}
+
 export async function searchByFullText<T extends ObjectLiteral>(
   repository: Repository<T>,
   { columns, term, take = 10, skip = 0, relations }: FullTextSearchOptions<T>,
@@ -25,7 +33,7 @@ export async function searchByFullText<T extends ObjectLiteral>(
 
   const qb = repository
     .createQueryBuilder('entity')
-    .where(`${tsVector('entity', columns)} @@ ${tsQuery(':term')}`, { term })
+    .where(fullTextWhere('entity', columns), { term })
     .take(take)
     .skip(skip);
 

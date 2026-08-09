@@ -65,7 +65,7 @@ export class WorksController {
     return work;
   }
 
-  /** Lista obras paginadas, com filtro por nome, mídia, idioma, autor, ilustrador e edição especial */
+  /** Lista obras paginadas, com filtro por mídia, idioma, autor, ilustrador e edição especial. O filtro `name` é full text: casa prefixo de palavra e ignora acento */
   @Get()
   @UseGuards(AuthenticatedGuard)
   @SerializeOptions({ type: PaginatedWorkResponse })
