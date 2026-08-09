@@ -50,13 +50,12 @@ describe('SearchService', () => {
       expect(serieService.search).toHaveBeenCalledTimes(1);
       expect(serieService.search).toHaveBeenCalledWith(
         { take: 20, skip: 0 },
-        { name: expect.anything() }, // ILike('%coisa%')
+        'coisa',
       );
       expect(workService.search).toHaveBeenCalledTimes(1);
       expect(workService.search).toHaveBeenCalledWith(
         { take: 20, skip: 0 },
-        { name: expect.anything() }, // ILike('%coisa%')
-        { covers: true },
+        'coisa',
       );
     });
   });

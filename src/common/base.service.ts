@@ -3,12 +3,13 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Repository, ObjectLiteral, FindOptionsWhere, ILike } from 'typeorm';
+import { Repository, ObjectLiteral, FindOptionsWhere } from 'typeorm';
 
 import type { FindOptionsRelations } from 'typeorm';
 import { PaginationDto } from './dto/base.dto';
 import { DefaultFilterDto } from './dto/default-filter.dto';
 import { paginate } from './dto/response-paginated.dto';
+import { searchByFullText } from './utils/full-text-search.utils';
 import { CacheService } from 'src/cache/cache.service';
 import { cacheKeyById, cacheKey } from 'src/cache/cache.keys';
 
@@ -74,14 +75,6 @@ export abstract class BaseService<T extends ObjectLiteral> {
     });
   }
 
-  async search(
-    { take = 10, skip = 0 }: PaginationDto,
-    where: FindOptionsWhere<T>,
-    relations?: FindOptionsRelations<T>,
-  ) {
-    return this.findAllBase({ take, skip }, where, relations);
-  }
-
   async findOneByCache(id: string) {
     if (!this.cache || !this.cacheKeyById) {
       return this.findOne({ id } as unknown as FindOptionsWhere<T>);
@@ -116,13 +109,21 @@ export abstract class BaseService<T extends ObjectLiteral> {
     );
   }
 
-  async findAllByName(filterDto: DefaultFilterDto) {
-    const where = filterDto.name
-      ? ({
-          name: ILike(`%${filterDto.name}%`),
-        } as unknown as FindOptionsWhere<T>)
-      : undefined;
-    return this.findAllByCache(filterDto, where);
+  async findAllByName({ name, take = 20, skip = 0 }: DefaultFilterDto) {
+    if (!name) return this.findAllByCache({ take, skip });
+
+    return this.cacheList({ take, skip, name }, async () =>
+      paginate(
+        await searchByFullText(this.repository, {
+          term: name,
+          take,
+          skip,
+          columns: ['name'],
+          relations: this.relations,
+        }),
+        { take, skip },
+      ),
+    );
   }
 
   protected async invalidateId(id: string) {

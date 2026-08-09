@@ -29,6 +29,8 @@ import { FilterWorkDto } from './dto/filter-work.dto';
 import { FileService } from 'src/file/file.service';
 import { generateImageFilename } from 'src/common/utils/generate-image-filename.utils';
 import { paginate } from 'src/common/dto/response-paginated.dto';
+import { PaginationDto } from 'src/common/dto/base.dto';
+import { searchByFullText } from 'src/common/utils/full-text-search.utils';
 
 @Injectable()
 export class WorksService extends BaseService<Work> {
@@ -67,6 +69,15 @@ export class WorksService extends BaseService<Work> {
 
   findOneById(id: string) {
     return this.findOneByCache(id);
+  }
+
+  search(pagination: PaginationDto, term?: string | null) {
+    return searchByFullText(this.repository, {
+      ...pagination,
+      term,
+      columns: ['name', 'subtitle'],
+      relations: { covers: true },
+    });
   }
 
   private async invalidate(

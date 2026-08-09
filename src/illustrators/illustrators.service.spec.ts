@@ -20,6 +20,7 @@ describe('IllustratorsService', () => {
     exists: jest.Mock;
     findOne: jest.Mock;
     findAndCount: jest.Mock;
+    createQueryBuilder: jest.Mock;
     save: jest.Mock;
     update: jest.Mock;
     delete: jest.Mock;
@@ -32,11 +33,28 @@ describe('IllustratorsService', () => {
     { id: 'illustrator-3', name: 'A grande coisa' },
   ];
 
+  let queryBuilder: {
+    where: jest.Mock;
+    take: jest.Mock;
+    skip: jest.Mock;
+    setFindOptions: jest.Mock;
+    getManyAndCount: jest.Mock;
+  };
+
   beforeEach(async () => {
+    queryBuilder = {
+      where: jest.fn().mockReturnThis(),
+      take: jest.fn().mockReturnThis(),
+      skip: jest.fn().mockReturnThis(),
+      setFindOptions: jest.fn().mockReturnThis(),
+      getManyAndCount: jest.fn(),
+    };
+
     illustratorRepository = {
       exists: jest.fn(),
       findOne: jest.fn(),
       findAndCount: jest.fn(),
+      createQueryBuilder: jest.fn().mockReturnValue(queryBuilder),
       save: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
@@ -68,8 +86,8 @@ describe('IllustratorsService', () => {
   });
 
   describe('findAllByName', () => {
-    it('busca com ILike quando tem name e retorna paginado', async () => {
-      illustratorRepository.findAndCount.mockResolvedValue([value, 2]);
+    it('busca por full text quando tem name e retorna paginado', async () => {
+      queryBuilder.getManyAndCount.mockResolvedValue([value, 2]);
 
       const result = await service.findAllByName({
         name: 'coisa',
@@ -83,13 +101,13 @@ describe('IllustratorsService', () => {
         pages: 1,
         current_page: 1,
       });
-      expect(illustratorRepository.findAndCount).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: { name: expect.anything() }, // ILike('%coisa%')
-          take: 20,
-          skip: 0,
-        }),
+      expect(illustratorRepository.createQueryBuilder).toHaveBeenCalled();
+      expect(queryBuilder.where).toHaveBeenCalledWith(
+        expect.stringContaining('to_tsquery'),
+        { term: 'coisa' },
       );
+      expect(queryBuilder.take).toHaveBeenCalledWith(20);
+      expect(queryBuilder.skip).toHaveBeenCalledWith(0);
     });
 
     it('sem name, busca sem where de nome', async () => {
