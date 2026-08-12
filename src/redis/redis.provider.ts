@@ -13,6 +13,9 @@ type RedisClientConfig = {
   disableOfflineQueue: boolean;
 };
 
+const SOCKET_CONNECT_TIMEOUT_MS = 5_000;
+const FIRST_CONNECT_TIMEOUT_MS = 20_000;
+
 const createRedisClient = async (
   config: ConfigService,
   { label, prefix, disableOfflineQueue }: RedisClientConfig,
@@ -20,14 +23,61 @@ const createRedisClient = async (
   const logger = new Logger(`Redis:${label}`);
   const host = config.get<string>(`${prefix}_HOST`);
   const port = Number(config.get(`${prefix}_PORT`));
+  const url = `redis://${host}:${port}`;
 
   const client = createClient({
-    url: `redis://${host}:${port}`,
+    url,
     disableOfflineQueue,
+    socket: {
+      connectTimeout: SOCKET_CONNECT_TIMEOUT_MS,
+      reconnectStrategy: (retries, cause) => {
+        const delay = Math.min(100 * 2 ** retries, 3_000);
+        logger.warn(
+          `Reconectando a ${url} (tentativa ${retries + 1}, próxima em ${delay}ms): ${String(cause)}`,
+        );
+        return delay;
+      },
+    },
   });
 
   client.on('error', (err) => logger.error('Erro no cliente Redis', err));
-  await client.connect();
+  client.on('ready', () => logger.log(`Cliente pronto (${url})`));
+  client.on('end', () => logger.warn(`Conexão encerrada (${url})`));
+
+  logger.log(`Conectando em ${url} (offlineQueue=${!disableOfflineQueue})`);
+  const startedAt = Date.now();
+
+  let timeoutId: NodeJS.Timeout | undefined;
+  try {
+    await Promise.race([
+      client.connect(),
+      new Promise<never>((_, reject) => {
+        timeoutId = setTimeout(
+          () =>
+            reject(
+              new Error(
+                `Timeout de ${FIRST_CONNECT_TIMEOUT_MS}ms conectando em ${url}`,
+              ),
+            ),
+          FIRST_CONNECT_TIMEOUT_MS,
+        );
+        timeoutId.unref();
+      }),
+    ]);
+  } catch (err) {
+    logger.error(
+      `Falha ao conectar em ${url} após ${Date.now() - startedAt}ms`,
+      err,
+    );
+    if (client.isOpen) {
+      client.destroy();
+    }
+    throw err;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+
+  logger.log(`Conectado em ${url} (${Date.now() - startedAt}ms)`);
 
   return client;
 };

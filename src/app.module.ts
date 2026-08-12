@@ -25,7 +25,11 @@ import {
   APP_PIPE,
   Reflector,
 } from '@nestjs/core';
-import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
+import {
+  ClassSerializerInterceptor,
+  Logger,
+  ValidationPipe,
+} from '@nestjs/common';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { AppMiddlewareModule } from './common/middleware/app-middleware.module';
@@ -44,17 +48,30 @@ import { HealthModule } from './health/health.module';
     }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        type: 'postgres',
-        host: configService.get<string>('DB_HOST'),
-        port: configService.get<number>('DB_PORT'),
-        username: configService.get<string>('POSTGRES_USER'),
-        password: configService.get<string>('POSTGRES_PASSWORD'),
-        database: configService.get<string>('POSTGRES_DB'),
-        entities: [`${__dirname}/**/*.entity{.ts,.js}`],
-        migrations: [`${__dirname}/migrations/*{.ts,.js}`],
-        synchronize: configService.get<string>('NODE_ENV') !== 'production',
-      }),
+      useFactory: (configService: ConfigService) => {
+        const host = configService.get<string>('DB_HOST');
+        const port = configService.get<number>('DB_PORT');
+        const database = configService.get<string>('POSTGRES_DB');
+        const username = configService.get<string>('POSTGRES_USER');
+        const synchronize =
+          configService.get<string>('NODE_ENV') !== 'production';
+
+        new Logger('TypeORM').log(
+          `Conectando em postgres://${username}@${host}:${port}/${database} (synchronize=${synchronize})`,
+        );
+
+        return {
+          type: 'postgres',
+          host,
+          port,
+          username,
+          password: configService.get<string>('POSTGRES_PASSWORD'),
+          database,
+          entities: [`${__dirname}/**/*.entity{.ts,.js}`],
+          migrations: [`${__dirname}/migrations/*{.ts,.js}`],
+          synchronize,
+        };
+      },
     }),
     ThrottlerModule.forRoot({
       throttlers: [

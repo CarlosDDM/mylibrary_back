@@ -17,7 +17,9 @@ export class RedisLifecycle implements OnApplicationShutdown {
     private readonly sessionClient: RedisClientType,
   ) {}
 
-  async onApplicationShutdown() {
+  async onApplicationShutdown(signal?: string) {
+    this.logger.log(`Encerrando clientes Redis (signal=${signal ?? '-'})`);
+
     const openClients = [this.cacheClient, this.sessionClient].filter(
       (client) => client.isOpen,
     );
