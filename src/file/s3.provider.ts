@@ -14,7 +14,7 @@ export const s3ClientProvider: Provider = {
 
     return new S3Client({
       region: config.get<string>('S3_REGION'),
-      forcePathStyle: config.get<string>('S3_PATH_STYLE') === 'true',
+      forcePathStyle: config.get<boolean>('S3_PATH_STYLE')!,
       ...(endpoint ? { endpoint } : {}),
       ...(accessKeyId && secretAccessKey
         ? { credentials: { accessKeyId, secretAccessKey } }

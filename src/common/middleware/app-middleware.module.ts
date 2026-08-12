@@ -19,14 +19,10 @@ export class AppMiddlewareModule implements NestModule {
   ) {}
 
   configure(consumer: MiddlewareConsumer) {
-    const cookieSecureEnv = this.config.get<string>('COOKIE_SECURE');
-    const cookieSecure =
-      cookieSecureEnv !== undefined
-        ? cookieSecureEnv === 'true'
-        : this.config.get<string>('NODE_ENV') === 'production';
-
-    const cookieSameSite = (this.config.get<string>('COOKIE_SAMESITE') ??
-      'lax') as 'lax' | 'strict' | 'none';
+    const cookieSecure = this.config.get<boolean>('COOKIE_SECURE')!;
+    const cookieSameSite = this.config.get<'lax' | 'strict' | 'none'>(
+      'COOKIE_SAMESITE',
+    )!;
 
     const redisStore = new RedisStore({
       client: this.redis,
