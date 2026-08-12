@@ -3,7 +3,6 @@ import { AppModule } from './app.module';
 import { Logger, LogLevel } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { NestExpressApplication } from '@nestjs/platform-express';
-import { whitelist } from './common/utils/whitelist.utils';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
 async function bootstrap() {
@@ -18,7 +17,7 @@ async function bootstrap() {
     : ['error', 'warn', 'log', 'debug', 'verbose'];
   app.useLogger(logLevels);
 
-  if (config.get<string>('ACTIVE_SWAGGER') === 'true') {
+  if (config.get<boolean>('ACTIVE_SWAGGER')) {
     const swagger = new DocumentBuilder()
       .setTitle('MyLibrary Doc')
       .setDescription(
@@ -46,15 +45,13 @@ async function bootstrap() {
     new Logger('Bootstrap').log('Swagger publicado em /docs');
   }
 
-  const trustProxy = config.get<string>('TRUST_PROXY');
-  if (trustProxy) {
-    const parsed =
-      trustProxy === 'true' ? true : Number(trustProxy) || trustProxy;
-    app.set('trust proxy', parsed);
-  }
+  app.set(
+    'trust proxy',
+    config.get<boolean | number | string[]>('TRUST_PROXY'),
+  );
 
   app.enableCors({
-    origin: whitelist(),
+    origin: config.get<string[]>('CORS_ORIGIN'),
     credentials: true,
   });
 
